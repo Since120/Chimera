@@ -1,0 +1,22 @@
+{
+  "name": "shared-types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types for Chimera project",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.6.5",
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "rimraf": "^5.0.10",
+    "typescript": "^5.8.3"
+  }
+}
