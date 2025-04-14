@@ -1,4 +1,6 @@
 {
+  "/dashboard/categories/page": "app/dashboard/categories/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/categories/page": "app/dashboard/categories/page.js"
+  "/auth/callback/page": "app/auth/callback/page.js",
+  "/auth/login/page": "app/auth/login/page.js"
 }

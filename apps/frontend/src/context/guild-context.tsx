@@ -5,10 +5,10 @@ import { GuildSelectionInfoDto } from 'shared-types';
 import { useAuth } from './auth-context';
 
 interface GuildContextType {
-  availableGuilds: GuildSelectionInfoDto[]; // Kommt jetzt stabil aus AuthContext
+  availableGuilds: GuildSelectionInfoDto[]; 
   currentGuild: GuildSelectionInfoDto | null;
-  setCurrentGuild: (guildId: string | null) => void; // Ist jetzt stabil
-  loading: boolean; // Kommt aus AuthContext
+  setCurrentGuild: (guildId: string | null) => void;
+  loading: boolean;
 }
 
 const defaultContext: GuildContextType = {
@@ -58,7 +58,7 @@ export function GuildProvider({ children }: { children: React.ReactNode }) {
       if (!guildToSelect && guildsToUse.length > 0) {
         guildToSelect = guildsToUse[0];
         console.log('[GuildContext Effect] Selecting first available guild:', guildToSelect.name);
-         localStorage.setItem('selectedGuildId', guildToSelect.id); // Speichere die erste, wenn keine gespeichert war
+         localStorage.setItem('selectedGuildId', guildToSelect.id);
       }
 
       // Nur updaten, wenn sich die Auswahl ändert
@@ -75,35 +75,37 @@ export function GuildProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem('selectedGuildId');
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, isAuthenticated, availableGuilds]); // Abhängig von Auth-Status und verfügbaren Guilds
+  }, [authLoading, isAuthenticated, availableGuilds, selectedGuild]); // Abhängig von Auth-Status und Guilds
 
-  // Funktion zum Setzen der Guild - stabil dank useCallback & stabiler Abhängigkeiten
-  const setCurrentGuildMemoized = useCallback((guildId: string | null) => {
+  // Funktion zum Setzen der Guild - stabil mit dem useCallback
+  const setCurrentGuildStable = useCallback((guildId: string | null) => {
     console.log(`[GuildContext] setCurrentGuild called with ID: ${guildId}`);
     const foundGuild = guildId ? availableGuilds.find(g => g.id === guildId) : null;
 
     if (guildId && !foundGuild) {
       console.error(`[GuildContext] Attempted to set non-available guild: ${guildId}`);
       console.log('[GuildContext] Available guilds for check:', availableGuilds);
-      // Optional: Fehler anzeigen oder zur ersten Guild wechseln?
       return; // Verhindere das Setzen einer ungültigen Guild
     }
 
     // Nur updaten, wenn sich die ID ändert
-    if (selectedGuild?.id !== foundGuild?.id) {
-        setSelectedGuild(foundGuild ?? null);
-        if (foundGuild) {
-          localStorage.setItem('selectedGuildId', foundGuild.id);
-          console.log(`[GuildContext] Guild set to: ${foundGuild.name}`);
-        } else {
-          localStorage.removeItem('selectedGuildId');
-          console.log('[GuildContext] Guild selection cleared.');
-        }
-    } else {
+    setSelectedGuild(prev => {
+      if (prev?.id === foundGuild?.id) {
         console.log(`[GuildContext] Guild ${guildId} is already selected.`);
-    }
-  }, [availableGuilds, selectedGuild?.id]); // Hängt von verfügbaren Guilds und der aktuellen ID ab
+        return prev;
+      }
+
+      if (foundGuild) {
+        localStorage.setItem('selectedGuildId', foundGuild.id);
+        console.log(`[GuildContext] Guild set to: ${foundGuild.name}`);
+      } else {
+        localStorage.removeItem('selectedGuildId');
+        console.log('[GuildContext] Guild selection cleared.');
+      }
+      
+      return foundGuild || null; // Explizit null zurückgeben, wenn foundGuild falsy ist
+    });
+  }, [availableGuilds]); // Hängt nur von verfügbaren Guilds ab
 
   // Kontextwert - stabil dank useMemo und stabilen Abhängigkeiten
   const contextValue = useMemo(() => {
@@ -111,10 +113,10 @@ export function GuildProvider({ children }: { children: React.ReactNode }) {
     return {
       currentGuild: selectedGuild,
       availableGuilds: availableGuilds || [],
-      setCurrentGuild: setCurrentGuildMemoized,
+      setCurrentGuild: setCurrentGuildStable,
       loading: authLoading,
     };
-  }, [selectedGuild, availableGuilds, setCurrentGuildMemoized, authLoading]);
+  }, [selectedGuild, availableGuilds, setCurrentGuildStable, authLoading]);
 
   return (
     <GuildContext.Provider value={contextValue}>

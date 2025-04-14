@@ -36,7 +36,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [internalAvailableGuilds, setInternalAvailableGuilds] = useState<GuildSelectionInfoDto[]>([]);
+  const [availableGuilds, setAvailableGuilds] = useState<GuildSelectionInfoDto[]>([]);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -47,16 +47,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleLogout = useCallback(async (redirect = true) => {
     console.log('handleLogout: Starting logout...');
     const currentPath = window.location.pathname;
+    
+    // State zurücksetzen
     setUser(null);
-    setInternalAvailableGuilds([]);
+    setAvailableGuilds([]);
     setToken(null);
     setIsAuthenticated(false);
     setLoading(false);
 
+    // Lokalen Storage leeren
     const tokenKey = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY || 'chimera_auth_token';
     localStorage.removeItem(tokenKey);
     localStorage.removeItem('selectedGuildId');
 
+    // Supabase abmelden
     try {
       const { error } = await supabase.auth.signOut();
       if (error) console.error('handleLogout: Supabase signOut error:', error);
@@ -65,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('handleLogout: Unexpected signOut error:', error);
     }
 
+    // Ggf. Redirect
     if (redirect && !currentPath.startsWith('/auth/login')) {
       console.log('handleLogout: Redirecting to /auth/login');
       router.push('/auth/login');
@@ -73,8 +78,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchBackendSession = useCallback(async (supabaseToken: string): Promise<SessionDto | null> => {
     console.log('[AuthContext] fetchBackendSession: Fetching backend session...');
-    // Set loading true ONLY if not already authenticated maybe? Or always? Let's keep it simple for now.
-    // setLoading(true); // Avoid setting loading true here if called from listener? Might cause flicker.
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const response = await fetch(`${apiUrl}/api/v1/auth/session`, {
@@ -91,11 +94,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const sessionData: SessionDto = await response.json();
       console.log('[AuthContext] fetchBackendSession: Success. User:', sessionData.user?.username);
 
-      setToken(prev => prev === supabaseToken ? prev : supabaseToken);
-      setUser(prev => JSON.stringify(prev) === JSON.stringify(sessionData.user) ? prev : sessionData.user);
-      setInternalAvailableGuilds(prev => JSON.stringify(prev) === JSON.stringify(sessionData.availableGuilds) ? prev : sessionData.availableGuilds);
+      // State aktualisieren, aber nur wenn sich wirklich etwas geändert hat
+      if (token !== supabaseToken) setToken(supabaseToken);
+      
+      // Optimierung - nur setzen wenn sich etwas geändert hat
+      const userChanged = JSON.stringify(user) !== JSON.stringify(sessionData.user);
+      if (userChanged) setUser(sessionData.user);
+      
+      const guildsChanged = JSON.stringify(availableGuilds) !== JSON.stringify(sessionData.availableGuilds);
+      if (guildsChanged) setAvailableGuilds(sessionData.availableGuilds);
+
       setIsAuthenticated(true);
 
+      // Token speichern
       const tokenKey = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY || 'chimera_auth_token';
       localStorage.setItem(tokenKey, supabaseToken);
       return sessionData;
@@ -104,10 +115,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await handleLogout(false);
       return null;
     } finally {
-        // Ensure loading is false after attempting fetch
-        setLoading(false);
+      // Ensure loading is false after attempting fetch
+      setLoading(false);
     }
-  }, [handleLogout]);
+  }, [handleLogout, user, token, availableGuilds]);
 
   // --- Auth State Listener ---
   useEffect(() => {
@@ -134,7 +145,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (event === 'SIGNED_OUT') {
           await handleLogout(true); // Logout with redirect
         }
-        // setLoading(false) is now handled in fetchBackendSession/handleLogout
       }
     );
 
@@ -142,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('[AuthContext] Removing onAuthStateChange listener');
       authListener?.subscription?.unsubscribe();
     };
-  }, [fetchBackendSession, handleLogout]); // Stable dependencies
+  }, [fetchBackendSession, handleLogout]); // Stabile Abhängigkeiten
 
   // --- Other Functions ---
   const login = useCallback(async () => {
@@ -180,18 +190,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loading, isAuthenticated, pathname, router]);
 
   // --- Memoized Context Value ---
-  // Memoize availableGuilds separately only if it changes significantly
-  const memoizedAvailableGuilds = useMemo(() => {
-      console.log('[AuthContext] Memoizing availableGuilds...');
-      return internalAvailableGuilds;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(internalAvailableGuilds)]); // Use deep comparison, less efficient but safer for now
-
   const contextValue = useMemo(() => {
     console.log('[AuthContext] Recalculating context value.');
     return {
       user,
-      availableGuilds: memoizedAvailableGuilds,
+      availableGuilds,
       token,
       loading,
       isAuthenticated,
@@ -199,7 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout: handleLogout,
       refreshSession,
     };
-  }, [user, memoizedAvailableGuilds, token, loading, isAuthenticated, login, handleLogout, refreshSession]);
+  }, [user, availableGuilds, token, loading, isAuthenticated, login, handleLogout, refreshSession]);
 
   return (
     <AuthContext.Provider value={contextValue}>

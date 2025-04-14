@@ -13,15 +13,17 @@ import CategoryList from './components/CategoryList';
 import CategoryModal from './components/CategoryModal';
 import ZoneModal from './components/ZoneModal';
 import CategoryErrorBoundary from './CategoryErrorBoundary';
-import { ConfirmDialog } from '@/components/confirm-dialog'; // Importieren Sie das Dialog-Komponente"></div>/components/dashboard/guild/confirm-dialog';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 
 // Hooks
-import { useCategories, EnhancedCategory, CategoryInput } from './hooks/useCategories'; // CategoryInput importieren
+import { useCategories, EnhancedCategory, CategoryInput } from './hooks/useCategories';
 import { useZones, ZoneInput } from './hooks/useZones';
 import { useRoles } from './hooks/useRoles';
 import { EnhancedZone } from './hooks/useCategories';
 
 const CategoryManagementInternal: React.FC = () => {
+  console.log(`[CategoryManagement] Rendering component`);
+
   // State für Modals
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showZoneModal, setShowZoneModal] = useState(false);
@@ -40,29 +42,35 @@ const CategoryManagementInternal: React.FC = () => {
   const [isDeletingZone, setIsDeletingZone] = useState(false); // Loading state für Zone Löschen
   const [loading, setLoading] = useState(false); // Allgemeiner Loading state
 
-
   // Hooks
   const { currentGuild } = useGuild();
-  const guildId = currentGuild?.id; // Sicherstellen, dass guildId hier verfügbar ist
-  console.log(`[CategoryManagement] Komponente gerendert mit currentGuild:`, currentGuild);
+  const guildId = currentGuild?.id || ''; // Sicherstellen, dass guildId hier verfügbar ist
+  console.log(`[CategoryManagement] Komponente mit guildId: ${guildId}`);
 
+  // Erweiterte Destrukturierung, um auch den refetch zu erhalten
   const {
     categories,
     loading: categoriesLoading,
-    error: categoriesError, // Fehler aus useCategories holen
+    error: categoriesError,
     expandedCategories,
     toggleCategoryExpand,
     saveCategory,
     deleteCategory,
     getTotalStats,
-    refetch: refetchCategories // Refetch-Funktion umbenennen
-  } = useCategories(); // useCategories braucht keine Props mehr
+    refetch: refetchCategories
+  } = useCategories();
 
-  const { roles, loading: rolesLoading, error: rolesError } = useRoles(); // guildId wird intern geholt
-  console.log(`[CategoryManagement] useRoles aufgerufen, Loading: ${rolesLoading}`);
+  const { roles, loading: rolesLoading, error: rolesError } = useRoles();
 
-  // Wir holen useZones hier nicht mehr global, sondern spezifisch beim Öffnen des ZoneModals
-  // oder in der CategoryList, falls Zonen direkt dort angezeigt werden.
+  // Debug-Info ausgeben
+  useEffect(() => {
+    console.log(`[CategoryManagement RENDER CHECK] Categories: ${categories.map(c => c.name).join(', ')}`);
+  }, [categories]);
+
+  // Debug-Info für Rollen
+  useEffect(() => {
+    console.log(`[CategoryManagement] Roles state changed: ${roles.length} roles`);
+  }, [roles]);
 
   // Statistiken
   const stats = useMemo(() => getTotalStats(), [getTotalStats]);
@@ -98,36 +106,49 @@ const CategoryManagementInternal: React.FC = () => {
     setSelectedCategoryIdForZoneModal(null);
   }, []);
 
-   // Zonen speichern - Diese Funktion benötigt den useZones Hook oder einen Service Call
+   // Zonen speichern - Nach erfolgreicher Aktion die Kategorien neu laden
    const handleSaveZone = useCallback(async (zoneData: ZoneInput) => {
      if (!selectedCategoryIdForZoneModal) return false; // Stelle sicher, dass wir die Kategorie-ID haben
-     // Hier muss die Logik zum Speichern der Zone implementiert werden,
-     // entweder über einen dedizierten useZones-Hook oder direkt über den zonesService
-     // Beispiel (benötigt zonesService):
-     setLoading(true); // Einen allgemeinen Loading-State verwenden? Oder spezifisch?
+
+     setLoading(true);
      let success = false;
      try {
+       let result;
+
        if (zoneData.id) {
-         await zonesService.updateZone(zoneData.id, {
+         // Update
+         const updatePayload = {
            name: zoneData.name,
            zoneKey: zoneData.zoneKey,
            pointsPerInterval: zoneData.pointsGranted,
            intervalMinutes: zoneData.minutesRequired
-         });
-         toast.success('Zone aktualisiert');
+         };
+
+         console.log("[handleSaveZone] Sende Update-Request für Zone", zoneData.id);
+         result = await zonesService.updateZone(zoneData.id, updatePayload);
+         console.log("[handleSaveZone] Update Success, Backend Result:", result);
+         toast.success('Zone erfolgreich aktualisiert');
        } else {
-         await zonesService.createZone(selectedCategoryIdForZoneModal, {
+         // Create
+         const createPayload = {
            name: zoneData.name,
            zoneKey: zoneData.zoneKey,
            pointsPerInterval: zoneData.pointsGranted,
            intervalMinutes: zoneData.minutesRequired
-         });
-         toast.success('Zone erstellt');
+         };
+
+         console.log("[handleSaveZone] Sende Create-Request für neue Zone in Kategorie", selectedCategoryIdForZoneModal);
+         result = await zonesService.createZone(selectedCategoryIdForZoneModal, createPayload);
+         console.log("[handleSaveZone] Create Success, Backend Result:", result);
+         toast.success('Zone erfolgreich erstellt');
        }
+
+       // Nach erfolgreicher Änderung die Kategorien neu laden
+       console.log("[handleSaveZone] Lade Kategorien neu, um Änderungen zu sehen");
+       refetchCategories();
+
        success = true;
        handleCloseZoneModal();
-       // Refetch categories, da sich Zonen geändert haben könnten (Realtime sollte das aber tun)
-       // refetchCategories();
      } catch (err: any) {
        console.error('Fehler beim Speichern der Zone:', err);
        toast.error(err.response?.data?.message || 'Fehler beim Speichern der Zone');
@@ -135,7 +156,7 @@ const CategoryManagementInternal: React.FC = () => {
        setLoading(false);
      }
      return success;
-   }, [selectedCategoryIdForZoneModal, handleCloseZoneModal]);
+   }, [selectedCategoryIdForZoneModal, handleCloseZoneModal, refetchCategories]);
 
   // --- Delete Dialog Handler ---
   const handleOpenDeleteCategoryDialog = useCallback((categoryId: string, e?: React.MouseEvent) => {
@@ -176,16 +197,22 @@ const CategoryManagementInternal: React.FC = () => {
     setIsDeletingZone(false);
   }, []);
 
-  // Zonen löschen - Benötigt zonesService
+  // Zonen löschen - Nach erfolgreicher Löschung die Kategorien neu laden
   const handleConfirmDeleteZone = useCallback(async () => {
     if (!zoneToDelete) return;
     setIsDeletingZone(true);
     try {
+        console.log("[handleConfirmDeleteZone] Sende Delete-Request für Zone", zoneToDelete);
         const result = await zonesService.deleteZone(zoneToDelete);
+
         if (result.success) {
-          toast.success('Zone gelöscht');
+          console.log("[handleConfirmDeleteZone] Delete Success, Backend Result:", result);
+          toast.success('Zone erfolgreich gelöscht');
+
+          // Kein manuelles Neuladen mehr - wir verlassen uns auf Realtime!
+          console.log("[handleConfirmDeleteZone] Warte auf Realtime-Event für gelöschte Zone...");
+
           handleCloseDeleteZoneDialog();
-          // refetchCategories(); // Ggf. Kategorien neu laden
         } else {
           toast.error(result.message || 'Fehler beim Löschen der Zone');
         }
@@ -195,7 +222,14 @@ const CategoryManagementInternal: React.FC = () => {
     } finally {
        setIsDeletingZone(false);
     }
-  }, [zoneToDelete, handleCloseDeleteZoneDialog]);
+  }, [zoneToDelete, handleCloseDeleteZoneDialog, refetchCategories]);
+
+  // Debug-Button zum manuellen Neuladen der Daten
+  const handleManualRefresh = useCallback(() => {
+    console.log("[CategoryManagement] Manuelles Neuladen der Kategorien...");
+    refetchCategories();
+    toast.info("Kategorien werden neu geladen...");
+  }, [refetchCategories]);
 
   return (
     <CategoryErrorBoundary>
@@ -206,15 +240,26 @@ const CategoryManagementInternal: React.FC = () => {
             <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
               Kategorien & Zonen Manager
             </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<PlusCircle size={18} />}
-              onClick={() => handleOpenCategoryModal()}
-              disabled={categoriesLoading || rolesLoading} // Deaktivieren während Ladevorgängen
-            >
-              Neue Kategorie
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              {/* Debug-Button zum manuellen Neuladen */}
+              <Button
+                variant="outlined"
+                color="info"
+                onClick={handleManualRefresh}
+                disabled={categoriesLoading}
+              >
+                Aktualisieren
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<PlusCircle size={18} />}
+                onClick={() => handleOpenCategoryModal(null)}
+                disabled={categoriesLoading || rolesLoading} // Deaktivieren während Ladevorgängen
+              >
+                Neue Kategorie
+              </Button>
+            </Box>
           </Box>
 
           {/* Stats */}

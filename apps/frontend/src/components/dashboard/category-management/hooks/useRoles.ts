@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useGuild } from '@/context/guild-context';
 import * as rolesService from '@/services/roles';
 
-// Interface bleibt gleich...
+// Interface bleibt gleich
 interface DiscordRole {
   id: string;
   name: string;
@@ -18,9 +18,8 @@ export const useRoles = (guildId?: string) => {
   const [roles, setRoles] = useState<{ value: string; label: string; color: number; colorHex: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const loadedGuildIdRef = useRef<string>('');
-
-  // effectiveGuildId bleibt gleich
+  
+  // effectiveGuildId berechnen
   const effectiveGuildId = React.useMemo(() => {
     const id = guildId || currentGuild?.id || '';
     console.log(`[useRoles] Effektive Guild ID berechnet: ${id}`);
@@ -34,10 +33,12 @@ export const useRoles = (guildId?: string) => {
        setRoles([]); // Leeren
        return;
     }
-     if (loading && loadedGuildIdRef.current === guildIdToLoad) {
-        console.log(`[useRoles] loadRoles: Already loading for ${guildIdToLoad}. Skipping.`);
-        return
+    
+    if (loading) {
+      console.log(`[useRoles] loadRoles: Already loading. Skipping.`);
+      return;
     }
+    
     console.log(`[useRoles] loadRoles aufgerufen für Guild: ${guildIdToLoad}`);
     setLoading(true);
     setError(null);
@@ -55,17 +56,15 @@ export const useRoles = (guildId?: string) => {
       });
 
       setRoles(formattedRoles);
-      loadedGuildIdRef.current = guildIdToLoad; // Markieren als geladen
       console.log(`[useRoles] loadRoles: ${formattedRoles.length} Rollen geladen für ${guildIdToLoad}`);
     } catch (err) {
       console.error(`[useRoles] Fehler beim Laden der Rollen für ${guildIdToLoad}:`, err);
       setError('Fehler beim Laden der Rollen');
       setRoles([]); // Bei Fehler leeren
-      loadedGuildIdRef.current = guildIdToLoad; // Trotz Fehler als geladen markieren, um Loop zu vermeiden
     } finally {
       setLoading(false);
     }
-  }, [loading]); // loading als Abhängigkeit
+  }, []); // Keine Abhängigkeiten verwenden
 
   // --- Haupt-useEffect ---
   useEffect(() => {
@@ -74,17 +73,12 @@ export const useRoles = (guildId?: string) => {
     if (!effectiveGuildId) {
       console.log('[useRoles Effect] No effectiveGuildId, resetting.');
       setRoles([]);
-      loadedGuildIdRef.current = '';
       return;
     }
 
-    // Laden, wenn die Guild neu ist oder die Daten fehlen
-    if (loadedGuildIdRef.current !== effectiveGuildId) {
-      loadRoles(effectiveGuildId);
-    } else {
-       console.log(`[useRoles Effect] Daten für Guild ${effectiveGuildId} bereits geladen/Laden läuft, überspringe.`);
-    }
-
+    // Immer die Rollen für die aktuelle Guild laden
+    loadRoles(effectiveGuildId);
+    
     // Kein Cleanup nötig, da keine Subscription
   }, [effectiveGuildId, loadRoles]); // Hängt nur von ID und der memoized Ladefunktion ab
 
@@ -92,8 +86,7 @@ export const useRoles = (guildId?: string) => {
   const refetch = useCallback(() => {
     console.log('[useRoles] refetch: Starte Neuladen');
     if (effectiveGuildId) {
-      loadedGuildIdRef.current = ''; // Erzwingt Neuladen im Effekt
-      loadRoles(effectiveGuildId); // Löst manuelles Laden aus
+      loadRoles(effectiveGuildId);
     }
   }, [effectiveGuildId, loadRoles]);
 

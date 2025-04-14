@@ -77,7 +77,7 @@ const ZoneModal: React.FC<ZoneModalProps> = ({
       minutesRequired: minutesRequired || 60,
       pointsGranted: pointsGranted || 5,
       ...(zone?.id ? { id: zone.id } : {}),
-      guild_id: categoryId // Add guild_id from category
+      category_id: categoryId // Add category_id from category
     };
 
     try {
