@@ -4,6 +4,8 @@
 /build
 /Doc
 node_modules
+.next
+/.next
 
 # Logs
 logs
