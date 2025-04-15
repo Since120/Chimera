@@ -1,7 +1,10 @@
-import { Injectable, Logger, NotFoundException, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
 import { DiscordApiService } from '../../../discord/discord-api/discord-api.service';
 import { GuildService } from '../../../core/guild/services/guild.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { Redis } from '@upstash/redis';
 import {
   CategoryDto,
   CreateCategoryDto,
@@ -18,6 +21,8 @@ export class CategoriesService {
     private readonly databaseService: DatabaseService,
     private readonly discordApiService: DiscordApiService,
     private readonly guildService: GuildService,
+    @InjectQueue('channel-rename') private readonly channelRenameQueue: Queue,
+    @Inject('UPSTASH_REDIS_CLIENT') private readonly redis: Redis,
   ) {}
 
   /**
@@ -319,7 +324,7 @@ export class CategoriesService {
     if (updateCategoryDto.defaultTrackingEnabled !== undefined) updateData.default_tracking_enabled = updateCategoryDto.defaultTrackingEnabled;
     if (updateCategoryDto.setupFlowEnabled !== undefined) updateData.setup_flow_enabled = updateCategoryDto.setupFlowEnabled;
 
-    // Update Discord category if it exists
+    // Update Discord category if it exists - Verwende BullMQ für Namensänderungen
     if (category.discord_category_id && updateCategoryDto.name) {
       try {
         const rolePermissions = updateCategoryDto.discordRoleIds?.map(roleId => ({
@@ -328,16 +333,39 @@ export class CategoriesService {
           canConnect: true,
         }));
 
-        await this.discordApiService.updateCategoryChannel(
-          category.discord_category_id,
-          {
-            name: updateCategoryDto.name,
-            rolePermissions,
-          },
-        );
+        // Nur die Berechtigungen direkt aktualisieren, nicht den Namen
+        if (rolePermissions && rolePermissions.length > 0) {
+          await this.discordApiService.updateCategoryChannel(
+            category.discord_category_id,
+            {
+              rolePermissions,
+            },
+          );
+        }
+
+        const newName = updateCategoryDto.name; // Bereits geprüft, dass Name da ist
+        const channelId = category.discord_category_id;
+
+        // 1. Letzten Namen in Redis speichern (überschreibt alten)
+        this.logger.debug(`Setting last known name for ${channelId} in Redis to "${newName}"`);
+        await this.redis.hset('pending_channel_names', { [channelId]: newName });
+
+        // 2. Job hinzufügen, WENN noch keiner läuft/wartet
+        const jobId = `process-channel-${channelId}`;
+        const existingJob = await this.channelRenameQueue.getJob(jobId);
+        // Prüft ob Job existiert UND ob er nicht schon fertig/fehlgeschlagen ist
+        if (!existingJob || ['completed', 'failed'].includes(await existingJob.getState())) {
+           this.logger.log(`Adding channel rename job to queue: ${jobId}`);
+           // Nur die ID übergeben, der Name wird aus Redis geholt
+           await this.channelRenameQueue.add('process-rename', { channelId }, { jobId });
+        } else {
+            this.logger.log(`Job ${jobId} already active or waiting for channel ${channelId}. Redis name updated. Skipping add.`);
+        }
+        // KEINE direkten Discord Calls mehr hier (weder Name noch Permissions)
       } catch (error) {
         this.logger.error(`Error updating Discord category: ${error.message}`);
-        // Wir werfen hier keinen Fehler, damit die Kategorie trotzdem aktualisiert wird
+        // Fehler weiterwerfen, um die gesamte Kategorie-Aktualisierung zu stoppen
+        throw error;
       }
     }
 

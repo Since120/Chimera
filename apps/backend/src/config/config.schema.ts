@@ -22,4 +22,15 @@ export const configValidationSchema = Joi.object({
 
   // Frontend
   FRONTEND_URL: Joi.string().default('http://localhost:3001'),
+
+  // Redis (für BullMQ)
+  REDIS_HOST: Joi.string().default('localhost'),
+  REDIS_PORT: Joi.number().default(6379),
+
+  // Upstash Redis
+  UPSTASH_REDIS_URL: Joi.string().required(),
+  UPSTASH_REDIS_TOKEN: Joi.string().required(),
+
+  // Logging
+  LOG_LEVEL: Joi.string().valid('error', 'warn', 'log', 'debug', 'verbose').default('log'),
 });

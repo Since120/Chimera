@@ -1,7 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
 import { DiscordApiService } from '../../../discord/discord-api/discord-api.service';
 import { GuildService } from '../../../core/guild/services/guild.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { Redis } from '@upstash/redis';
 import { ZoneDto, CreateZoneDto, UpdateZoneDto } from 'shared-types';
 
 @Injectable()
@@ -12,6 +15,8 @@ export class ZonesService {
     private readonly databaseService: DatabaseService,
     private readonly discordApiService: DiscordApiService,
     private readonly guildService: GuildService,
+    @InjectQueue('channel-rename') private readonly channelRenameQueue: Queue,
+    @Inject('UPSTASH_REDIS_CLIENT') private readonly redis: Redis,
   ) {}
 
   /**
@@ -194,17 +199,50 @@ export class ZonesService {
     if (updateZoneDto.pointsPerInterval !== undefined) updateData.points_per_interval = updateZoneDto.pointsPerInterval;
     if (updateZoneDto.intervalMinutes !== undefined) updateData.interval_minutes = updateZoneDto.intervalMinutes;
 
-    // Update Discord voice channel if it exists
+    // Update Discord voice channel if it exists - Verwende BullMQ für Namensänderungen
     if (zone.discord_channel_id && (updateZoneDto.name || updateZoneDto.zoneKey)) {
-      const newName = updateZoneDto.name || zone.name;
-      const newKey = updateZoneDto.zoneKey || zone.zone_key;
+      // Hole die zugehörige Kategorie, um zu prüfen, ob setupFlowEnabled = false ist
+      const { data: category, error: categoryError } = await this.databaseService.adminClient
+        .from('categories')
+        .select('setup_flow_enabled')
+        .eq('id', zone.category_id)
+        .single();
 
-      await this.discordApiService.updateVoiceChannel(
-        zone.discord_channel_id,
-        {
-          name: `[${newKey}] ${newName}`,
-        },
-      );
+      if (categoryError) {
+        this.logger.error(`Error getting category for zone ${zoneId}: ${categoryError.message}`);
+        throw new NotFoundException(`Category for zone ${zoneId} not found`);
+      } else {
+        const setupFlowEnabled = category?.setup_flow_enabled ?? true;
+
+        if (!setupFlowEnabled) {
+          // Nur fortfahren, wenn Setup NICHT aktiv ist
+          const newName = updateZoneDto.name ?? zone.name; // Nimm neuen oder alten Namen
+          const newKey = updateZoneDto.zoneKey ?? zone.zone_key; // Nimm neuen oder alten Key
+          const formattedName = `[${newKey}] ${newName}`;
+          const channelId = zone.discord_channel_id;
+
+          try {
+            // 1. Letzten Namen in Redis speichern
+            this.logger.debug(`Setting last known name for ${channelId} in Redis to "${formattedName}"`);
+            await this.redis.hset('pending_channel_names', { [channelId]: formattedName });
+
+            // 2. Job hinzufügen, WENN noch keiner läuft/wartet
+            const jobId = `process-channel-${channelId}`;
+            const existingJob = await this.channelRenameQueue.getJob(jobId);
+            if (!existingJob || ['completed', 'failed'].includes(await existingJob.getState())) {
+               this.logger.log(`Adding zone channel rename job to queue: ${jobId}`);
+               await this.channelRenameQueue.add('process-rename', { channelId }, { jobId });
+            } else {
+                this.logger.log(`Job ${jobId} already active or waiting for channel ${channelId}. Redis name updated. Skipping add.`);
+            }
+          } catch (error) {
+             this.logger.error(`Error setting Redis state or adding job for zone ${zoneId}: ${error.message}`);
+             throw error;
+          }
+        } else {
+          this.logger.log(`Skipping channel rename job for zone ${zoneId} because setup flow is enabled for the category`);
+        }
+      }
     }
 
     // Update zone in database

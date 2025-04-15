@@ -8,6 +8,7 @@ import { DatabaseModule } from '../../database';
 import { DiscordApiModule } from '../../discord/discord-api';
 import { BotGatewayModule } from '../../core/bot-gateway';
 import { GuildModule } from '../../core/guild/guild.module';
+import { QueueModule } from '../../core/queue/queue.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { GuildModule } from '../../core/guild/guild.module';
     DiscordApiModule,
     BotGatewayModule,
     GuildModule,
+    QueueModule,
   ],
   controllers: [
     CategoriesController,

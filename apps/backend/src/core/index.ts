@@ -4,3 +4,4 @@ export * from './users';
 export * from './guilds';
 export * from './bot-gateway';
 export * from './guild';
+export * from './queue/queue.module';

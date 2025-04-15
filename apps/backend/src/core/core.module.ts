@@ -18,6 +18,7 @@ import { GuildModule } from './guild';
     GuildModule,
   ],
   exports: [
+    ConfigModule,
     DatabaseModule,
     AuthModule,
     UsersModule,

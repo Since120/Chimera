@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: chimera-redis # Eindeutiger Name für den Container
+    ports:
+      - "6379:6379" # Mapt den Standard-Redis-Port vom Container auf deinen Host
+    volumes:
+      - redis_data:/data # Benanntes Volume, um Daten persistent zu speichern
+    restart: unless-stopped # Startet den Container neu, außer er wurde manuell gestoppt
+    command: redis-server --save 60 1 --loglevel warning # Optional: Speicher alle 60s wenn mind. 1 Key geändert wurde, Log-Level
+
+volumes:
+  redis_data: # Definiert das benannte Volume

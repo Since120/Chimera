@@ -1,4 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, HttpException, HttpStatus } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { AxiosError } from 'axios';
 import { BotGatewayService } from '../../core/bot-gateway/bot-gateway.service';
 import {
   CategoryChannel,
@@ -16,8 +19,13 @@ import {
 @Injectable()
 export class DiscordApiService {
   private readonly logger = new Logger(DiscordApiService.name);
+  private readonly apiBaseUrl = 'https://discord.com/api/v10';
 
-  constructor(private readonly botGatewayService: BotGatewayService) {}
+  constructor(
+    private readonly botGatewayService: BotGatewayService,
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {}
 
   /**
    * Get a guild by its ID
@@ -353,6 +361,58 @@ export class DiscordApiService {
     } catch (error) {
       this.logger.error(`Error getting guild member: ${error.message}`, error.stack);
       return null;
+    }
+  }
+
+  /**
+   * Rename a channel or category using direct Discord REST API call.
+   * Throws specific exceptions for error handling in the processor.
+   */
+  async renameChannelOrCategory(channelId: string, newName: string): Promise<void> {
+    const botToken = this.configService.get<string>('DISCORD_BOT_TOKEN');
+    const url = `${this.apiBaseUrl}/channels/${channelId}`;
+    const headers = {
+      Authorization: `Bot ${botToken}`,
+      'Content-Type': 'application/json',
+      'User-Agent': 'ProjectChimera (https://github.com/Since120/Chimera, v0.1)',
+    };
+    const body = { name: newName };
+
+    this.logger.debug(`[Direct API Call] Attempting PATCH ${url} with body: ${JSON.stringify(body)}`);
+
+    try {
+      const response = await this.httpService.patch(url, body, { headers }).toPromise();
+      this.logger.log(`[Direct API Call] Successfully renamed channel ${channelId} to "${newName}"`);
+    } catch (error) {
+      const axiosError = error as AxiosError<any>;
+      this.logger.error(`[Direct API Call] Failed to rename channel ${channelId}. Status: ${axiosError.response?.status}, Response: ${JSON.stringify(axiosError.response?.data)}`, axiosError.stack);
+
+      if (axiosError.response) {
+        const status = axiosError.response.status;
+        const responseData = axiosError.response.data;
+
+        if (status === 404) {
+          throw new NotFoundException(`Channel ${channelId} not found via direct API call.`);
+        } else if (status === 429) {
+          // Rate Limit - wirf einen speziellen Fehler mit retry_after Information
+          const retryAfterSeconds = responseData?.retry_after || 10; // Default 10s
+          const rateLimitError = new HttpException(
+            `Rate Limit Exceeded. Retry after ${retryAfterSeconds}s.`,
+            HttpStatus.TOO_MANY_REQUESTS // Status 429
+          );
+          // Füge retry_after als Property hinzu, damit der Processor es lesen kann
+          (rateLimitError as any).retryAfter = retryAfterSeconds;
+          throw rateLimitError;
+        } else if (status === 403) {
+          throw new HttpException(`Forbidden: Missing permissions to rename channel ${channelId}.`, HttpStatus.FORBIDDEN);
+        } else {
+          // Anderer HTTP-Fehler
+          throw new HttpException(`Failed to rename channel ${channelId}. Status: ${status}`, status);
+        }
+      } else {
+        // Netzwerkfehler o.ä. ohne Response
+        throw new HttpException(`Network or unknown error renaming channel ${channelId}: ${axiosError.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
   }
 }
