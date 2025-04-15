@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { CategoriesService } from './services/categories.service';
 import { ZonesService } from './services/zones.service';
 import { TwoWaySyncService } from './services/two-way-sync.service';
@@ -14,7 +14,7 @@ import { QueueModule } from '../../core/queue/queue.module';
   imports: [
     DatabaseModule,
     DiscordApiModule,
-    BotGatewayModule,
+    forwardRef(() => BotGatewayModule),
     GuildModule,
     QueueModule,
   ],

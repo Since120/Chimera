@@ -1,7 +1,8 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseService } from '../../database';
-import { Client, GatewayIntentBits, Events } from 'discord.js';
+import { Client, GatewayIntentBits, Events, GuildChannel, Channel, TextChannel, VoiceChannel, CategoryChannel } from 'discord.js';
+import { TwoWaySyncService } from '../../plugins/dynamic-voices/services/two-way-sync.service';
 
 @Injectable()
 export class BotGatewayService implements OnModuleInit, OnModuleDestroy {
@@ -11,6 +12,8 @@ export class BotGatewayService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => TwoWaySyncService))
+    private readonly twoWaySyncService: TwoWaySyncService,
   ) {
     // Initialisieren des Discord-Clients mit den notwendigen Intents
     this.client = new Client({
@@ -274,6 +277,44 @@ export class BotGatewayService implements OnModuleInit, OnModuleDestroy {
         }
       } catch (error) {
         this.logger.error(`Fehler beim Verarbeiten des GuildMemberUpdate-Events: ${error.message}`);
+      }
+    });
+
+    // ChannelUpdate-Event (Kanal wird aktualisiert, z.B. Name ändert sich)
+    this.client.on(Events.ChannelUpdate, async (oldChannel: Channel, newChannel: Channel) => {
+      // Prüfen, ob es sich um einen Kanal in einem Server handelt
+      if (!(newChannel instanceof TextChannel || newChannel instanceof VoiceChannel || newChannel instanceof CategoryChannel)) return;
+
+      // Prüfen, ob der Service verfügbar ist
+      if (!this.twoWaySyncService) {
+        this.logger.error('TwoWaySyncService not available in BotGatewayService for ChannelUpdate!');
+        return;
+      }
+
+      this.logger.debug(`ChannelUpdate event received for channel ${newChannel.id}`);
+      try {
+        await this.twoWaySyncService.handleChannelUpdate(newChannel.id, newChannel as GuildChannel);
+      } catch (error) {
+        this.logger.error(`Error forwarding channelUpdate to TwoWaySyncService for channel ${newChannel.id}: ${error.message}`, error.stack);
+      }
+    });
+
+    // ChannelDelete-Event (Kanal wird gelöscht)
+    this.client.on(Events.ChannelDelete, async (channel: Channel) => {
+      // Prüfen, ob es sich um einen Kanal in einem Server handelt
+      if (!(channel instanceof TextChannel || channel instanceof VoiceChannel || channel instanceof CategoryChannel)) return;
+
+      // Prüfen, ob der Service verfügbar ist
+      if (!this.twoWaySyncService) {
+        this.logger.error('TwoWaySyncService not available in BotGatewayService for ChannelDelete!');
+        return;
+      }
+
+      this.logger.debug(`ChannelDelete event received for channel ${channel.id}`);
+      try {
+        await this.twoWaySyncService.handleChannelDelete(channel.id);
+      } catch (error) {
+        this.logger.error(`Error forwarding channelDelete to TwoWaySyncService for channel ${channel.id}: ${error.message}`, error.stack);
       }
     });
   }

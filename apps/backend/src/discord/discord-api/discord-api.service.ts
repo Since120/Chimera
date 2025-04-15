@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, HttpException, HttpStatus, Inject, forwardRef } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { AxiosError } from 'axios';
@@ -22,6 +22,7 @@ export class DiscordApiService {
   private readonly apiBaseUrl = 'https://discord.com/api/v10';
 
   constructor(
+    @Inject(forwardRef(() => BotGatewayService))
     private readonly botGatewayService: BotGatewayService,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
