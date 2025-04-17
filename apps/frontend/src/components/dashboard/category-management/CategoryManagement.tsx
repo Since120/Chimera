@@ -294,6 +294,7 @@ const CategoryManagementInternal: React.FC = () => {
               }
             }}
             onDeleteZone={handleOpenDeleteZoneDialog}
+            availableRoles={roles} // Rollen übergeben
           />
         </Container>
 

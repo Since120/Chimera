@@ -5,7 +5,7 @@
 import React from 'react';
 import {
   Box, Paper, Typography, IconButton, Collapse, Grid, Chip,
-  Divider, CircularProgress
+  Divider, CircularProgress, Stack
 } from '@mui/material';
 import {
   ChevronUp, ChevronDown, Edit, Clock, Users, BarChart2, EyeOff, Trash
@@ -24,6 +24,7 @@ interface CategoryItemProps {
   onAddZone: () => void;
   onEditZone: (zoneId: string) => void;
   onDeleteZone: (zoneId: string, e: React.MouseEvent) => void;
+  availableRoles: { value: string; label: string; color?: number; colorHex?: string }[];
 }
 
 const CategoryItem: React.FC<CategoryItemProps> = ({
@@ -34,7 +35,8 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   onDelete,
   onAddZone,
   onEditZone,
-  onDeleteZone
+  onDeleteZone,
+  availableRoles
 }) => {
   return (
     <Paper key={category.id} variant="outlined">
@@ -65,9 +67,37 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
               {!category.isVisible && <EyeOff size={14} opacity={0.7} />}
               {category.trackingActive && <BarChart2 size={14} color="#6366f1" />}
             </Box>
-            <Typography variant="caption" color="text.secondary">
-              {category.zones?.length || 0} Zonen · {category.allowedRoles?.join(", ") || "Keine Rollen"}
-            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                {category.zones?.length || 0} Zonen
+              </Typography>
+              {category.allowedRoles && category.allowedRoles.length > 0 && (
+                <Typography variant="caption" color="text.secondary" sx={{ mx: 0.5 }}>·</Typography>
+              )}
+              {category.allowedRoles?.length > 0 ? (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
+                  {category.allowedRoles.map((roleId) => {
+                    const role = availableRoles.find(r => r.value === roleId);
+                    return (
+                      <Chip
+                        key={roleId}
+                        label={role ? role.label : `ID: ${roleId}`}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          height: 'auto',
+                          py: 0.25,
+                          lineHeight: 1.2,
+                          ...(role?.colorHex ? { borderColor: role.colorHex, color: role.colorHex } : {})
+                        }}
+                      />
+                    );
+                  })}
+                </Box>
+              ) : (
+                <Typography variant="caption" color="text.secondary">Keine Rollen</Typography>
+              )}
+            </Stack>
           </Box>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -141,9 +171,18 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                 {category.allowedRoles?.length > 0 ? (
-                  category.allowedRoles.map((role) => (
-                    <Chip key={role} label={role} size="small" variant="outlined" />
-                  ))
+                  category.allowedRoles.map((roleId) => {
+                    const role = availableRoles.find(r => r.value === roleId);
+                    return (
+                      <Chip
+                        key={roleId}
+                        label={role ? role.label : `ID: ${roleId}`}
+                        size="small"
+                        variant="outlined"
+                        sx={role?.colorHex ? { borderColor: role.colorHex, color: role.colorHex } : {}}
+                      />
+                    );
+                  })
                 ) : (
                   <Typography variant="body2" color="text.secondary">Keine Rollen zugewiesen</Typography>
                 )}

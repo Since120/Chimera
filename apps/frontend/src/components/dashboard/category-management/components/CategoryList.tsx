@@ -18,6 +18,7 @@ interface CategoryListProps {
   onEditZone: (categoryId: string, zoneId: string) => void;
   onDeleteZone: (zoneId: string, e: React.MouseEvent) => void;
   updatingCategories?: string[];
+  availableRoles?: { value: string; label: string; color?: number; colorHex?: string }[];
 }
 
 const CategoryList: React.FC<CategoryListProps> = ({
@@ -29,7 +30,8 @@ const CategoryList: React.FC<CategoryListProps> = ({
   onDeleteCategory,
   onAddZone,
   onEditZone,
-  onDeleteZone
+  onDeleteZone,
+  availableRoles = []
 }) => {
   if (loading) {
     return (
@@ -73,6 +75,7 @@ const CategoryList: React.FC<CategoryListProps> = ({
           onAddZone={() => onAddZone(category.id)}
           onEditZone={(zoneId: string) => onEditZone(category.id, zoneId)}
           onDeleteZone={onDeleteZone}
+          availableRoles={availableRoles}
         />
       ))}
     </Stack>
