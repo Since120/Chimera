@@ -21,7 +21,7 @@ export default function RootLayout({
       <head>
         <link href="https://fonts.cdnfonts.com/css/lufga" rel="stylesheet" />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <Provider>
           {children}
         </Provider>

@@ -48,7 +48,8 @@ const colors = {
   navActiveGreenBase: { value: "#90FF00" },
   navIconCircleBgBase: { value: "#1E293A" },
   navIconColorBase: { value: "#BAC5D5" },
-  navIconBorderColorBase: { value: "rgba(186, 197, 213, 0.6)" } // Abgeschwächte Rahmenfarbe
+  navIconBorderColorBase: { value: "rgba(186, 197, 213, 0.6)" }, // Abgeschwächte Rahmenfarbe
+  navIconOutlineColorBase: { value: "rgba(186, 197, 213, 0.3)" } // Noch subtilere Rahmenfarbe für Outline-Buttons
 };
 
 const semanticTokens = defineSemanticTokens({
@@ -77,7 +78,8 @@ const semanticTokens = defineSemanticTokens({
       activeGreen: { value: { base: "{colors.navActiveGreenBase}", _dark: "{colors.navActiveGreenBase}" } },
       iconCircleBg: { value: { base: "{colors.navIconCircleBgBase}", _dark: "{colors.navIconCircleBgBase}" } },
       iconColor: { value: { base: "{colors.navIconColorBase}", _dark: "{colors.navIconColorBase}" } },
-      iconBorderColor: { value: { base: "{colors.navIconBorderColorBase}", _dark: "{colors.navIconBorderColorBase}" } }
+      iconBorderColor: { value: { base: "{colors.navIconBorderColorBase}", _dark: "{colors.navIconBorderColorBase}" } },
+      iconOutlineColor: { value: { base: "{colors.navIconOutlineColorBase}", _dark: "{colors.navIconOutlineColorBase}" } }
     }
   },
 });
