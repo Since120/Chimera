@@ -1,21 +1,85 @@
 // apps/frontend-new/src/components/dashboard/layout/TopNav.tsx
 "use client";
 
-import { Flex, Box, Icon, Button, Text, HStack, IconButton, Menu, useBreakpointValue, Popover, Portal, useMediaQuery } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
-import { LuBell, LuSettings, LuLayoutGrid, LuCalendar, LuClipboardList, LuFileText, LuUsers, LuMenu, LuPanelLeftOpen, LuPanelLeftClose } from "react-icons/lu";
+import { Flex, Box, Button, Text, IconButton, Menu, useBreakpointValue, Popover, Portal, useMediaQuery, Icon } from "@chakra-ui/react";
+import React, { useState, useEffect } from "react";
+import { LuBell, LuSettings, LuCalendar, LuClipboardList, LuFileText, LuUsers, LuMenu, LuPanelLeftOpen, LuPanelLeftClose } from "react-icons/lu";
 import UserMenu from "./UserMenu";
+import { useRouter, usePathname } from "next/navigation";
+import { mainNavItems, defaultNavIcon } from "@/config/navigation";
+
+// Datenstruktur für die Sub-Navigation
+const sectionSubNavs = {
+  dashboard: [
+    { label: "Übersicht", href: "/dashboard", exact: true },
+    { label: "Aktivitäts-Feed", href: "/dashboard/activity" },
+    { label: "Benachrichtigungen", href: "/dashboard/notifications" },
+  ],
+  categories: [
+    { label: "Alle Kategorien", href: "/dashboard/categories", exact: true },
+    { label: "Zonen Übersicht", href: "/dashboard/categories/zones" },
+    { label: "Berechtigungen", href: "/dashboard/categories/permissions" },
+    { label: "Setup Konfiguration", href: "/dashboard/categories/setup" },
+  ],
+  trading: [
+    { label: "Marktplatz", href: "/dashboard/trading", exact: true },
+    { label: "Meine Angebote", href: "/dashboard/trading/my-listings" },
+    { label: "Transaktionen", href: "/dashboard/trading/history" },
+    { label: "Item Datenbank", href: "/dashboard/trading/items" },
+  ],
+  settings: [
+    { label: "Allgemein", href: "/dashboard/settings", exact: true },
+    { label: "Mein Profil", href: "/dashboard/settings/profile" },
+    { label: "Guild Einstellungen", href: "/dashboard/settings/guild" },
+    { label: "Integrationen", href: "/dashboard/settings/integrations" },
+  ],
+  tracking: [ // Beispiel für weiteren Bereich
+    { label: "Statistiken", href: "/dashboard/tracking", exact: true },
+    { label: "Leaderboard", href: "/dashboard/tracking/leaderboard" },
+  ],
+  // Fallback oder Default
+  default: [
+     { label: "Übersicht", href: "/dashboard", exact: true },
+  ]
+};
+
+// Hilfsfunktion zur Ermittlung des Bereichs
+function getCurrentSectionKey(pathname: string): keyof typeof sectionSubNavs {
+  const pathSegments = pathname.split('/').filter(Boolean); // ['dashboard', 'categories', ...]
+  if (pathSegments.length >= 2 && pathSegments[1] in sectionSubNavs) {
+    return pathSegments[1] as keyof typeof sectionSubNavs;
+  }
+  if (pathname === '/dashboard') return 'dashboard';
+  return 'default'; // Fallback
+}
+
+// Beispiel-Daten für rechte Icons
+const actionIcons = [
+  LuFileText, LuCalendar, LuClipboardList, LuUsers // Beispiel-Icons
+];
 
 interface TopNavProps {
   isExpanded?: boolean;
   toggleSidebar?: () => void;
+  openDrawer?: () => void;
+  isLargerThan1100?: boolean;
+  breakpoint?: string;
 }
 
-export default function TopNav({ isExpanded = false, toggleSidebar }: TopNavProps) {
+export default function TopNav({ isExpanded = false, toggleSidebar, openDrawer, isLargerThan1100 = false }: TopNavProps) {
   const user = { displayName: "User Name", avatarUrl: undefined }; // Platzhalter
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // State für den aktiven Navigationspunkt und Popover
-  const [activeSecondaryNav, setActiveSecondaryNav] = useState("invoices");
+  // Ermittle den aktuellen Bereich und die entsprechenden Sub-Nav-Items
+  const currentSectionKey = getCurrentSectionKey(pathname);
+  const currentSubNavItems = sectionSubNavs[currentSectionKey];
+
+  // Finde das passende Icon basierend auf dem currentSectionKey
+  const activeNavItem = mainNavItems.find(item => item.key === currentSectionKey);
+  const ActiveIcon = activeNavItem ? activeNavItem.icon : defaultNavIcon;
+
+  // State für den Popover
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   // Bestimmen, ob wir auf einem kleinen Bildschirm sind (unter md)
@@ -29,50 +93,41 @@ export default function TopNav({ isExpanded = false, toggleSidebar }: TopNavProp
   }, [isMobileView]);
 
   // Breakpoint-basierte Anzeige der Icons mit festen Breakpoints
-  // Bei 1485px die Aktions-Icons in das Dropdown verwandeln
+  // Bei 1536px (2xl) die Aktions-Icons in das Dropdown verwandeln
   const shouldCollapseIcons = useBreakpointValue({
     base: true, // Auf kleinen Bildschirmen immer ausblenden
+    sm: true,
+    md: true,
     lg: true, // Auf mittleren Bildschirmen auch ausblenden
     xl: true, // Auf großen Bildschirmen auch ausblenden
-    "2xl": false, // Erst ab 2xl (1536px) anzeigen, was nahe an 1485px ist
+    "2xl": false, // Erst ab 2xl (1536px) anzeigen
   });
 
-  // Bei 1200px das Settings-Icon ausblenden
+  // Bei 1280px (xl) das Settings-Icon ausblenden
   const shouldCollapseSettings = useBreakpointValue({
     base: true, // Auf kleinen Bildschirmen immer ausblenden
+    sm: true,
+    md: true,
     lg: true, // Auf mittleren Bildschirmen auch ausblenden
-    xl: false, // Ab xl (1280px) anzeigen, was nahe an 1200px ist
+    xl: false, // Ab xl (1280px) anzeigen
   });
 
-  // Bei 1185px das Nav-Icon in der weißen Navigationsleiste ausblenden
+  // Bei 1280px (xl) das Nav-Icon in der weißen Navigationsleiste ausblenden
   const shouldCollapseNavIcon = useBreakpointValue({
     base: true, // Auf kleinen Bildschirmen immer ausblenden
-    md: true, // Auf mittleren Bildschirmen auch ausblenden
+    sm: true,
+    md: true,
     lg: true, // Auf großen Bildschirmen auch ausblenden
-    xl: false, // Ab xl (1280px) anzeigen, was nahe an 1185px ist
+    xl: false, // Ab xl (1280px) anzeigen
   });
 
-  // Bei 850px das Glocken-Icon ausblenden - benutzerdefinierter Media Query
-  const [isLargerThan850] = useMediaQuery(["(min-width: 850px)"]);
-  const shouldCollapseBellIcon = !isLargerThan850;
+  // Bei 1150px das Glocken-Icon ausblenden - benutzerdefinierter Media Query
+  const [isLargerThan1150] = useMediaQuery(["(min-width: 1150px)"]);
+  const shouldCollapseBellIcon = !isLargerThan1150;
 
   // Bei 375px das Logo ausblenden - benutzerdefinierter Media Query
   const [isLargerThan375] = useMediaQuery(["(min-width: 375px)"]);
   const shouldShowLogo = isLargerThan375;
-
-  // Daten für sekundäre Navigation
-  const secondaryNavItems = [
-    { label: "Estimates", value: "estimates" },
-    { label: "Invoices", value: "invoices" },
-    { label: "Payments", value: "payments" },
-    { label: "Recurring Invoices", value: "recurring" },
-    { label: "Checkouts", value: "checkouts" },
-  ];
-
-  // Beispiel-Daten für rechte Icons
-  const actionIcons = [
-    LuFileText, LuCalendar, LuClipboardList, LuUsers // Beispiel-Icons
-  ];
 
   return (
     <Flex
@@ -104,7 +159,7 @@ export default function TopNav({ isExpanded = false, toggleSidebar }: TopNavProp
 
       {/* Mittlerer Bereich: Nav-Toggle + Sekundäre Navigation + Rechte Icons */}
       <Flex justify="center" align="center" flex="1" gap={{ base: 2, md: 3, lg: 4 }}>
-        {/* Nav Toggle Button (als Kreis) - links neben der weißen Navigationsleiste */}
+        {/* Sidebar Toggle Button - nur auf größeren Bildschirmen (>= 1100px) */}
         <IconButton
           aria-label={isExpanded ? "Sidebar schließen" : "Sidebar öffnen"}
           variant="outline"
@@ -119,8 +174,29 @@ export default function TopNav({ isExpanded = false, toggleSidebar }: TopNavProp
           color="nav.iconColor"
           _hover={{ bg: "dark.700" }}
           onClick={toggleSidebar} // Sidebar ein-/ausklappen
+          display={isLargerThan1100 ? "inline-flex" : "none"} // Nur sichtbar ab 1100px
         >
           <Icon as={isExpanded ? LuPanelLeftClose : LuPanelLeftOpen} boxSize={4} />
+        </IconButton>
+
+        {/* Mobile Menu Toggle Button - nur auf kleinen Bildschirmen (< md) */}
+        <IconButton
+          aria-label="Mobile Menü öffnen"
+          variant="outline"
+          size="sm"
+          borderRadius="full"
+          width="36px"
+          height="36px"
+          padding={0}
+          borderColor="nav.iconOutlineColor"
+          borderWidth="1px"
+          color="nav.iconColor"
+          _hover={{ bg: "dark.700" }}
+          onClick={() => openDrawer && openDrawer()} // Mobile Drawer öffnen mit Null-Check
+          display={{ base: "inline-flex", md: "none" }} // Nur auf kleinen Bildschirmen anzeigen
+          zIndex={10} // Höherer z-index
+        >
+          <Icon as={LuPanelLeftOpen} boxSize={4} />
         </IconButton>
 
         {/* Weiße Navigationsleiste mit Popover für kleine Bildschirme */}
@@ -153,15 +229,20 @@ export default function TopNav({ isExpanded = false, toggleSidebar }: TopNavProp
             bg="nav.iconCircleBg" // Semantischer Token
             // Ref entfernt
           >
-            <Icon as={LuLayoutGrid} boxSize={4} color="nav.iconColor" />
+            {/* Verwende Chakra UI Icon-Komponente mit Fallback */}
+            {ActiveIcon ? <Icon as={ActiveIcon} boxSize={4} color="nav.iconColor" /> : <span>•</span>}
           </Box>
 
-          {/* Sekundäre Navigationspunkte */}
-          {secondaryNavItems.map((item) => {
-            const isActive = item.value === activeSecondaryNav;
+          {/* Kontextuelle Sub-Navigation basierend auf dem aktuellen Bereich */}
+          {currentSubNavItems.map((item) => {
+            // Bestimme, ob der aktuelle Pfad mit dem Link übereinstimmt
+            const isActive = item.exact
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
+
             return (
               <Button
-                key={item.value}
+                key={item.href}
                 variant={undefined} // Variante entfernen (Test)
                 size="sm"
                 borderRadius="full"
@@ -175,7 +256,7 @@ export default function TopNav({ isExpanded = false, toggleSidebar }: TopNavProp
                 alignItems="center"
                 gap={1.5} // Abstand zwischen Punkt und Text
                 onClick={() => {
-                  setActiveSecondaryNav(item.value);
+                  router.push(item.href); // Client-seitige Navigation
                   if (isMobileView) {
                     setIsPopoverOpen(false); // Popover schließen nach Auswahl auf mobilen Geräten
                   }
@@ -204,23 +285,30 @@ export default function TopNav({ isExpanded = false, toggleSidebar }: TopNavProp
                 <Popover.Arrow bg="bg.subtle" />
                 <Popover.Body bg="bg.subtle" p={2}>
                   <Flex direction="column" gap={1}>
-                    {secondaryNavItems.map((item) => (
-                      <Popover.CloseTrigger key={item.value} asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          justifyContent="flex-start"
-                          onClick={() => {
-                            setActiveSecondaryNav(item.value);
-                            setIsPopoverOpen(false); // Popover schließen nach Auswahl
-                          }}
-                          bg={item.value === activeSecondaryNav ? "nav.activeGreen" : "transparent"}
-                          color={item.value === activeSecondaryNav ? "black" : "inherit"}
-                        >
-                          {item.label}
-                        </Button>
-                      </Popover.CloseTrigger>
-                    ))}
+                    {currentSubNavItems.map((item) => {
+                      // Bestimme, ob der aktuelle Pfad mit dem Link übereinstimmt
+                      const isActive = item.exact
+                        ? pathname === item.href
+                        : pathname.startsWith(item.href);
+
+                      return (
+                        <Popover.CloseTrigger key={item.href} asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            justifyContent="flex-start"
+                            onClick={() => {
+                              router.push(item.href); // Client-seitige Navigation
+                              setIsPopoverOpen(false); // Popover schließen nach Auswahl
+                            }}
+                            bg={isActive ? "nav.activeGreen" : "transparent"}
+                            color={isActive ? "black" : "inherit"}
+                          >
+                            {item.label}
+                          </Button>
+                        </Popover.CloseTrigger>
+                      );
+                    })}
                   </Flex>
                 </Popover.Body>
               </Popover.Content>
@@ -327,7 +415,7 @@ export default function TopNav({ isExpanded = false, toggleSidebar }: TopNavProp
           width="36px"
           height="36px"
           padding={0}
-          display={shouldCollapseBellIcon ? "none" : "inline-flex"} // Bei 850px ausblenden
+          display={shouldCollapseBellIcon ? "none" : "inline-flex"} // Bei 1150px ausblenden
           bg="nav.iconCircleBg"
           color="nav.iconColor"
           _hover={{ bg: "dark.700" }}

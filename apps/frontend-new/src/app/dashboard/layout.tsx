@@ -2,29 +2,48 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Box, Flex, useBreakpointValue } from "@chakra-ui/react";
+import { Box, Flex, useBreakpointValue, useMediaQuery } from "@chakra-ui/react";
 import SideNav from "@/components/dashboard/layout/SideNav";
 import TopNav from "@/components/dashboard/layout/TopNav";
+import MobileDrawer from "@/components/dashboard/layout/MobileDrawer";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false); // Neuer State für Mount-Status
 
-  // Responsive Verhalten: Auf kleinen Bildschirmen automatisch einklappen
-  const isMobile = useBreakpointValue({ base: true, md: false });
-
-  // Sidebar auf kleinen Bildschirmen automatisch einklappen
+  // Setze Mount-Status nach dem ersten Render
   useEffect(() => {
-    if (isMobile) {
-      setIsSidebarExpanded(false);
-    }
-  }, [isMobile]);
+    setIsMounted(true);
+  }, []);
 
+  // Verwende useMediaQuery für den 1100px Breakpoint
+  const [isLargerThan1100] = useMediaQuery(["(min-width: 1100px)"]);
+  // Breakpoint-Werte für andere responsive Anpassungen
+  const breakpoint = useBreakpointValue({ base: "base", md: "md", lg: "lg" });
+
+  // Berechne die effektive Sidebar-Expansion basierend auf Breakpoint und State
+  // - Über 1100px: Manuell steuerbar durch isSidebarExpanded
+  // - Unter 1100px: Immer eingeklappt (Icon-Ansicht)
+  // - Unter md (768px): Sidebar komplett ausgeblendet (wird durch Drawer ersetzt)
+  // Effektive Expansion erst berechnen, wenn gemountet und Breakpoint bekannt
+  // Wenn nicht gemountet, immer 'false' annehmen, um Flash zu vermeiden
+  const actuallyExpanded = isMounted && isLargerThan1100 ? isSidebarExpanded : false;
+
+  // Angepasste toggleSidebar-Funktion, die nur über 1100px funktioniert
   const toggleSidebar = () => {
-    setIsSidebarExpanded(!isSidebarExpanded);
+    if (isMounted && isLargerThan1100) { // Auch hier Mount-Check hinzufügen
+      setIsSidebarExpanded(!isSidebarExpanded);
+    }
+  };
+
+  // Funktion zum Öffnen des Drawers
+  const openDrawer = () => {
+    setIsDrawerOpen(true);
   };
 
   return (
@@ -41,9 +60,9 @@ export default function DashboardLayout({
         `
       }}
     >
-      {/* Sidebar - auf kleinen Bildschirmen ausblenden */}
+      {/* Sidebar - unter md ausblenden, unter lg immer eingeklappt */}
       <Box display={{ base: "none", md: "block" }}>
-        <SideNav isExpanded={isSidebarExpanded} />
+        <SideNav isExpanded={actuallyExpanded} />
       </Box>
 
       {/* Hauptbereich (TopNav + Seiteninhalt) */}
@@ -53,21 +72,21 @@ export default function DashboardLayout({
         overflowY="auto"
         overflowX="hidden" // Verhindert horizontale Scrollbars
         position="relative"
-        boxShadow={isSidebarExpanded ?
+        boxShadow={actuallyExpanded ?
           "0 20px 25px -5px rgba(0,0,0,0.4), 0 10px 10px -5px rgba(0,0,0,0.3)" :
           "none"
         } // Noch stärkerer Schatten für den Elevation-Effekt
-        borderWidth={isSidebarExpanded ? "8px" : "0"} // Deutlich breiterer Rand
-        borderColor={isSidebarExpanded ? "#0c111b" : "transparent"} // Rand in der Farbe der Sidebar
-        borderRadius={isSidebarExpanded ? "lg" : "0"} // Stärker abgerundete Ecken wenn angehoben
-        bg={isSidebarExpanded ? "rgba(16, 23, 34, 0.98)" : "transparent"} // Leicht hellerer Hintergrund
+        borderWidth={actuallyExpanded ? "8px" : "0"} // Deutlich breiterer Rand
+        borderColor={actuallyExpanded ? "#0c111b" : "transparent"} // Rand in der Farbe der Sidebar
+        borderRadius={actuallyExpanded ? "lg" : "0"} // Stärker abgerundete Ecken wenn angehoben
+        bg={actuallyExpanded ? "rgba(16, 23, 34, 0.98)" : "transparent"} // Leicht hellerer Hintergrund
         zIndex="2" // Stellt sicher, dass der Hauptinhalt über der Sidebar liegt
         transition="all 0.3s ease-in-out"
-        transform={isSidebarExpanded ? "perspective(800px) translateZ(40px) translateY(-4px) scale(0.98)" : "none"} // Angepasste Z-Translation, Y-Translation und Skalierung für Elevation-Effekt ohne Scrollbars
+        transform={actuallyExpanded ? "perspective(800px) translateZ(40px) translateY(-4px) scale(0.98)" : "none"} // Angepasste Z-Translation, Y-Translation und Skalierung für Elevation-Effekt ohne Scrollbars
       >
         {/* Unterer Schatten-Overlay für zusätzliche Tiefenwirkung */}
         <Box
-          display={isSidebarExpanded ? 'block' : 'none'} // Nur wenn Sidebar offen ist
+          display={actuallyExpanded ? 'block' : 'none'} // Nur wenn Sidebar offen ist
           position="absolute"
           left="0"
           right="0"
@@ -80,7 +99,7 @@ export default function DashboardLayout({
 
         {/* Oberer Schatten-Overlay für zusätzliche Tiefenwirkung */}
         <Box
-          display={isSidebarExpanded ? 'block' : 'none'} // Nur wenn Sidebar offen ist
+          display={actuallyExpanded ? 'block' : 'none'} // Nur wenn Sidebar offen ist
           position="absolute"
           left="0"
           right="0"
@@ -93,7 +112,7 @@ export default function DashboardLayout({
 
         {/* Linker Schatten-Overlay für zusätzliche Tiefenwirkung */}
         <Box
-          display={isSidebarExpanded ? 'block' : 'none'} // Nur wenn Sidebar offen ist
+          display={actuallyExpanded ? 'block' : 'none'} // Nur wenn Sidebar offen ist
           position="absolute"
           left="0"
           top="0"
@@ -106,7 +125,7 @@ export default function DashboardLayout({
 
         {/* Rechter Schatten-Overlay für zusätzliche Tiefenwirkung */}
         <Box
-          display={isSidebarExpanded ? 'block' : 'none'} // Nur wenn Sidebar offen ist
+          display={actuallyExpanded ? 'block' : 'none'} // Nur wenn Sidebar offen ist
           position="absolute"
           right="0"
           top="0"
@@ -119,7 +138,7 @@ export default function DashboardLayout({
 
         {/* Zusätzlicher Schatten-Effekt für mehr Tiefe */}
         <Box
-          display={isSidebarExpanded ? 'block' : 'none'} // Nur wenn Sidebar offen ist
+          display={actuallyExpanded ? 'block' : 'none'} // Nur wenn Sidebar offen ist
           position="absolute"
           left="0"
           right="0"
@@ -132,13 +151,25 @@ export default function DashboardLayout({
         />
 
         {/* Top Navigation */}
-        <TopNav isExpanded={isSidebarExpanded} toggleSidebar={toggleSidebar} />
+        <TopNav
+          isExpanded={actuallyExpanded}
+          toggleSidebar={toggleSidebar}
+          openDrawer={openDrawer}
+          isLargerThan1100={isLargerThan1100}
+          breakpoint={breakpoint}
+        />
 
         {/* Seiteninhalt */}
         <Box as="main" pt={8} px={6} pb={6} flex="1">
           {children}
         </Box>
       </Flex>
+
+      {/* Mobile Drawer - Sichtbarkeit wird durch isOpen gesteuert */}
+      <MobileDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+      />
     </Flex>
   );
 }

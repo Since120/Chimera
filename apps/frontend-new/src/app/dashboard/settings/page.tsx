@@ -1,12 +1,12 @@
-// apps/frontend-new/src/app/dashboard/page.tsx
+// apps/frontend-new/src/app/dashboard/settings/page.tsx
 import { Box, Heading, Text } from "@chakra-ui/react";
 
-export default function DashboardPage() {
+export default function SettingsPage() {
   return (
     <Box>
       {/* Seiten-spezifischer Titel */}
       <Heading as="h1" size="lg" mb={6}>
-        Dashboard Overview
+        Settings Management
       </Heading>
       {/* Platzhalter-Box */}
       <Box
@@ -21,7 +21,7 @@ export default function DashboardPage() {
         justifyContent="center"
       >
         <Text color="fg.muted" fontSize="lg">
-          Inhaltsbereich für das Dashboard...
+          Inhaltsbereich für Einstellungen...
         </Text>
       </Box>
     </Box>
