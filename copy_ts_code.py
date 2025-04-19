@@ -10,7 +10,11 @@ import sys
 TARGET_DIRECTORIES = [
     "apps/backend/src",
     "apps/frontend/src",
+    "apps/frontend/app",
     "packages/shared-types/src",
+    "apps/frontend-new/src",
+
+
     # Fügen Sie hier weitere relative Pfade hinzu
     # "pfad/zum/anderen/basis-ordner",
 ]

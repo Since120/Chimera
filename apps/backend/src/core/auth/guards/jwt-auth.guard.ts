@@ -11,6 +11,20 @@ export class JwtAuthGuard extends AuthGuard('jwt-supabase') {
     this.logger.log('=== JWT AUTH GUARD START ===');
     this.logger.log(`Checking authorization for ${context.getHandler().name} in ${context.getClass().name}`);
 
+    // Get the request object
+    const request = context.switchToHttp().getRequest();
+    this.logger.log(`Request URL: ${request.url}`);
+    this.logger.log(`Request method: ${request.method}`);
+    this.logger.log(`Request headers: ${JSON.stringify(request.headers)}`);
+
+    // Check if Authorization header is present
+    const authHeader = request.headers.authorization;
+    if (!authHeader) {
+      this.logger.error('No Authorization header found in request');
+    } else {
+      this.logger.log(`Authorization header found: ${authHeader.substring(0, 20)}...`);
+    }
+
     try {
       // Call the parent canActivate method
       const result = await super.canActivate(context);

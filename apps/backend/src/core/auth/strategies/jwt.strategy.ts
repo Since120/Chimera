@@ -82,6 +82,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt-supabase') {
       const authHeader = req.headers?.['authorization'] as string || '';
       const token = authHeader.replace('Bearer ', '') || 'No token found';
       this.logger.log(`Token (first 20 chars): ${token.substring(0, 20)}...`);
+      this.logger.log(`Request URL: ${req.url}`);
+      this.logger.log(`Request method: ${req.method}`);
+      this.logger.log(`Request headers: ${JSON.stringify(req.headers)}`);
 
       // Log the full payload for debugging
       this.logger.log(`Full JWT payload: ${JSON.stringify(payload, null, 2)}`);

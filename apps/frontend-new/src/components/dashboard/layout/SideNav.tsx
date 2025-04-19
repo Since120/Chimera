@@ -1,12 +1,13 @@
 // apps/frontend-new/src/components/dashboard/layout/SideNav.tsx
 "use client";
 
-import { Flex, chakra, Icon } from "@chakra-ui/react";
-import { motion } from "framer-motion";
+import { Flex, chakra, Icon, Box } from "@chakra-ui/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "@/components/ui/tooltip";
 import Link from "next/link";
 import { mainNavItems } from "@/config/navigation";
 import React from "react";
+import { usePathname } from "next/navigation";
 
 // Motion-Komponenten definieren
 const MotionBox = motion(chakra.div);
@@ -21,9 +22,10 @@ interface NavItemProps {
   href: string;
   isExpanded: boolean;
   icon: React.ElementType;
+  isActive?: boolean;
 }
 
-const NavItem = ({ label, href, isExpanded, icon }: NavItemProps) => {
+const NavItem = ({ label, href, isExpanded, icon, isActive = false }: NavItemProps) => {
   // Erstelle ein Wrapper-Element für den Link-Inhalt
   const LinkContent = () => (
     <Flex
@@ -34,65 +36,100 @@ const NavItem = ({ label, href, isExpanded, icon }: NavItemProps) => {
       px={isExpanded ? 3 : 0}
       py={2}
       borderRadius="md"
+      position="relative"
+      bg={isActive ? (isExpanded ? "whiteAlpha.200" : "transparent") : "transparent"}
       _hover={{
         bg: isExpanded ? "whiteAlpha.200" : "transparent",
       }}
       css={{
         '&:hover': {
-          transform: 'scale(1.05)',
+          transform: isActive ? 'none' : 'scale(1.05)',
           transition: 'transform 0.2s'
         }
       }}
     >
+      {/* Aktiver Indikator - links vom Icon */}
+      {isActive && (
+        <Box
+          position="absolute"
+          left={0}
+          top="50%"
+          transform="translateY(-50%)"
+          width="3px"
+          height="70%"
+          bg="nav.activeGreen"
+          borderRadius="full"
+        />
+      )}
+
       {!isExpanded ? (
         <Tooltip content={label} placement="right" showArrow>
           <MotionBox
+            // Keine x-Animation, nur Skalierung und Helligkeit
             animate={{
-              scale: 1, // Keine Skalierung
-              filter: "brightness(1)" // Keine Abdunklung
+              scale: isActive ? 1.1 : 1,
+              filter: isActive ? "brightness(1.2)" : "brightness(1)"
             }}
             transition={{
               type: "spring",
               stiffness: 400,
-              damping: 15
+              damping: 15,
+              // Schnellere Animation für bessere Reaktionsfähigkeit
+              duration: 0.15
             }}
             layout
           >
             {/* Verwende Chakra UI Icon-Komponente mit Fallback */}
-            {icon ? <Icon as={icon} boxSize={5} /> : <span>•</span>}
+            {icon && (
+              <Icon
+                as={icon}
+                boxSize={5}
+                color={isActive ? "nav.activeGreen" : "inherit"}
+              />
+            )}
           </MotionBox>
         </Tooltip>
       ) : (
         <MotionBox
+          // Keine x-Animation, nur Skalierung und Helligkeit
           animate={{
-            scale: 1, // Keine Skalierung
-            filter: "brightness(0.9)" // Leichte Abdunklung für die Sidebar
+            scale: isActive ? 1.1 : 1,
+            filter: isActive ? "brightness(1.2)" : "brightness(0.9)"
           }}
           transition={{
             type: "spring",
             stiffness: 400,
-            damping: 15
+            damping: 15,
+            // Schnellere Animation für bessere Reaktionsfähigkeit
+            duration: 0.15
           }}
           layout
         >
           {/* Verwende Chakra UI Icon-Komponente mit Fallback */}
-          {icon ? <Icon as={icon} boxSize={5} /> : <span>•</span>}
+          {icon && (
+            <Icon
+              as={icon}
+              boxSize={5}
+              color={isActive ? "nav.activeGreen" : "inherit"}
+            />
+          )}
         </MotionBox>
       )}
 
       {isExpanded && (
         <MotionBox
           ml={3}
-          initial={{ opacity: 0, x: -15 }}
+          // Keine initial-Animation beim ersten Rendern
           animate={{ opacity: 1, x: 0 }}
+          // Nur Animation für Änderungen, nicht für das erste Rendern
           transition={{
-            delay: 0.15,
-            duration: 0.3,
+            duration: 0.2,
             type: "spring",
             stiffness: 200,
             damping: 20
           }}
-          fontWeight="medium"
+          fontWeight={isActive ? "bold" : "medium"}
+          color={isActive ? "nav.activeGreen" : "inherit"}
         >
           {label}
         </MotionBox>
@@ -113,6 +150,15 @@ export default function SideNav({ isExpanded }: SideNavProps) {
   // Wir verwenden direkt den isExpanded-Prop ohne weitere Bedingungen
   // Die Logik für die Anzeige basierend auf Breakpoints wird im Layout und über CSS gesteuert
   const showExpanded = isExpanded;
+  const pathname = usePathname();
+
+  // Funktion zum Prüfen, ob ein NavItem aktiv ist
+  const isItemActive = (href: string, exact?: boolean): boolean => {
+    if (exact) {
+      return pathname === href;
+    }
+    return pathname.startsWith(href);
+  };
 
   // Definiere einen sehr dunklen Hintergrund für die Sidebar (tiefer liegend)
   const basementBg = "#0c111b"; // Sehr dunkles Blau für die Sidebar
@@ -123,14 +169,34 @@ export default function SideNav({ isExpanded }: SideNavProps) {
   // Definiere einen subtilen Farbverlauf für zusätzliche Tiefe
   const basementGradient = "linear-gradient(to right, #0c111b, #0f1523)"
 
+  // Varianten für die Icon-Animation
+  const iconContainerVariants = {
+    expanded: {
+      width: "240px",
+      transition: {
+        type: "spring",
+        stiffness: 200,
+        damping: 30,
+        mass: 1.2
+      }
+    },
+    collapsed: {
+      width: "64px",
+      transition: {
+        type: "spring",
+        stiffness: 200,
+        damping: 30,
+        mass: 1.2
+      }
+    }
+  };
+
   return (
     <MotionBox
       as="nav"
       // Animierte Breite mit Framer Motion
-      animate={{
-        width: isExpanded ? "240px" : "64px" // Immer 64px wenn nicht expandiert
-      }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      variants={iconContainerVariants}
+      animate={isExpanded ? "expanded" : "collapsed"}
       // Konditionales Styling basierend auf isExpanded
       bg={showExpanded ? basementBg : "transparent"} // Extrem dunkler Hintergrund für maximalen Kontrast
       bgGradient={showExpanded ? basementGradient : "none"}
@@ -153,15 +219,25 @@ export default function SideNav({ isExpanded }: SideNavProps) {
         justifyContent="center" // Immer zentrieren, unabhängig vom Zustand
         height="100%"
       >
-        {mainNavItems.map((item) => (
-          <NavItem
-            key={item.key}
-            label={item.label}
-            href={item.href}
-            icon={item.icon}
-            isExpanded={showExpanded}
-          />
-        ))}
+        <AnimatePresence mode="sync">
+          {mainNavItems.map((item) => (
+            <motion.div
+              key={item.key}
+              initial={false} // Keine initiale Animation
+              animate={{ opacity: 1 }} // Immer sichtbar
+              exit={{ opacity: 1 }} // Keine Exit-Animation
+              transition={{ duration: 0 }} // Sofortige Übergänge
+            >
+              <NavItem
+                label={item.label}
+                href={item.href}
+                icon={item.icon}
+                isExpanded={showExpanded}
+                isActive={isItemActive(item.href, item.exact)}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </Flex>
 
       {/* Einklapp-Button am Ende wurde entfernt - Steuerung erfolgt jetzt über TopNav */}

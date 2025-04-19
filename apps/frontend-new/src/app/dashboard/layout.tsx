@@ -60,10 +60,10 @@ export default function DashboardLayout({
         `
       }}
     >
-      {/* Sidebar - unter md ausblenden, unter lg immer eingeklappt */}
-      <Box display={{ base: "none", md: "block" }}>
-        <SideNav isExpanded={actuallyExpanded} />
-      </Box>
+    {/* Sidebar - unter md ausblenden, unter lg immer eingeklappt */}
+    <Box display={{ base: "none", md: "block" }}>
+      <SideNav isExpanded={actuallyExpanded} />
+    </Box>
 
       {/* Hauptbereich (TopNav + Seiteninhalt) */}
       <Flex

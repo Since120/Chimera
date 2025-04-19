@@ -2,6 +2,8 @@
 "use client";
 
 import { Flex, Box, Button, Text, IconButton, Menu, useBreakpointValue, Popover, Portal, useMediaQuery, Icon } from "@chakra-ui/react";
+import { Tooltip } from "@/components/ui/tooltip";
+import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
 import React, { useState, useEffect } from "react";
 import { LuBell, LuSettings, LuCalendar, LuClipboardList, LuFileText, LuUsers, LuMenu, LuPanelLeftOpen, LuPanelLeftClose } from "react-icons/lu";
 import UserMenu from "./UserMenu";
@@ -53,6 +55,30 @@ function getCurrentSectionKey(pathname: string): keyof typeof sectionSubNavs {
   return 'default'; // Fallback
 }
 
+// Motion-Komponenten definieren
+const MotionFlex = motion(Flex);
+const MotionBox = motion(Box);
+
+// Varianten für die Animation der SubNav-Items
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 }, // Startet unten, unsichtbar
+  visible: { opacity: 1, y: 0 },  // Endet auf normaler Position, sichtbar
+  exit: { opacity: 0, y: -15 }    // Geht nach oben raus, unsichtbar
+};
+
+// Varianten für den Container mit Staffelung
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      delayChildren: 0.1,   // Kleine Verzögerung bevor das erste Kind startet
+      staggerChildren: 0.07 // Verzögerung zwischen den Kindern
+    }
+  },
+  exit: { opacity: 0 }
+};
+
 // Beispiel-Daten für rechte Icons
 const actionIcons = [
   LuFileText, LuCalendar, LuClipboardList, LuUsers // Beispiel-Icons
@@ -67,7 +93,7 @@ interface TopNavProps {
 }
 
 export default function TopNav({ isExpanded = false, toggleSidebar, openDrawer, isLargerThan1100 = false }: TopNavProps) {
-  const user = { displayName: "User Name", avatarUrl: undefined }; // Platzhalter
+  // Benutzerinformationen werden direkt im UserMenu aus dem Auth-Context geladen
   const router = useRouter();
   const pathname = usePathname();
 
@@ -160,24 +186,26 @@ export default function TopNav({ isExpanded = false, toggleSidebar, openDrawer, 
       {/* Mittlerer Bereich: Nav-Toggle + Sekundäre Navigation + Rechte Icons */}
       <Flex justify="center" align="center" flex="1" gap={{ base: 2, md: 3, lg: 4 }}>
         {/* Sidebar Toggle Button - nur auf größeren Bildschirmen (>= 1100px) */}
-        <IconButton
-          aria-label={isExpanded ? "Sidebar schließen" : "Sidebar öffnen"}
-          variant="outline"
-          size="sm"
-          borderRadius="full"
-          width="36px"
-          height="36px"
-          padding={0}
-          borderColor={isExpanded ? "nav.activeGreen" : "nav.iconOutlineColor"} // Grüner Rahmen wenn Sidebar geöffnet
-          borderWidth="1px"
-          transition="border-color 0.2s ease-in-out"
-          color="nav.iconColor"
-          _hover={{ bg: "dark.700" }}
-          onClick={toggleSidebar} // Sidebar ein-/ausklappen
-          display={isLargerThan1100 ? "inline-flex" : "none"} // Nur sichtbar ab 1100px
-        >
-          <Icon as={isExpanded ? LuPanelLeftClose : LuPanelLeftOpen} boxSize={4} />
-        </IconButton>
+        <Tooltip content={isExpanded ? "Sidebar schließen" : "Sidebar öffnen"} placement="bottom" showArrow>
+          <IconButton
+            aria-label={isExpanded ? "Sidebar schließen" : "Sidebar öffnen"}
+            variant="outline"
+            size="sm"
+            borderRadius="full"
+            width="36px"
+            height="36px"
+            padding={0}
+            borderColor={isExpanded ? "nav.activeGreen" : "nav.iconOutlineColor"} // Grüner Rahmen wenn Sidebar geöffnet
+            borderWidth="1px"
+            transition="border-color 0.2s ease-in-out"
+            color="nav.iconColor"
+            _hover={{ bg: "dark.700" }}
+            onClick={toggleSidebar} // Sidebar ein-/ausklappen
+            display={isLargerThan1100 ? "inline-flex" : "none"} // Nur sichtbar ab 1100px
+          >
+            <Icon as={isExpanded ? LuPanelLeftClose : LuPanelLeftOpen} boxSize={4} />
+          </IconButton>
+        </Tooltip>
 
         {/* Mobile Menu Toggle Button - nur auf kleinen Bildschirmen (< md) */}
         <IconButton
@@ -202,7 +230,9 @@ export default function TopNav({ isExpanded = false, toggleSidebar, openDrawer, 
         {/* Weiße Navigationsleiste mit Popover für kleine Bildschirme */}
         <Popover.Root open={isMobileView ? isPopoverOpen : false} onOpenChange={(details) => isMobileView && setIsPopoverOpen(details.open)}>
           <Popover.Trigger asChild>
-            <Flex
+            <MotionFlex
+              layout
+              transition={{ layout: { type: "spring", stiffness: 150, damping: 25, mass: 1.5 } }} // Sehr sanfter Feder-Effekt für Breitenanimation
               borderRadius="full" // Stark abgerundet
               px={{ base: 1, md: 1.5, lg: 2 }} // Noch kompakterer Innenabstand bei mittleren Größen
               py={{ base: 2, md: 2.5, lg: 3 }} // Angepasste vertikale Polsterung für verschiedene Bildschirmgrößen
@@ -227,55 +257,112 @@ export default function TopNav({ isExpanded = false, toggleSidebar, openDrawer, 
             height="36px"
             width="36px"
             bg="nav.iconCircleBg" // Semantischer Token
-            // Ref entfernt
           >
-            {/* Verwende Chakra UI Icon-Komponente mit Fallback */}
             {ActiveIcon ? <Icon as={ActiveIcon} boxSize={4} color="nav.iconColor" /> : <span>•</span>}
           </Box>
 
-          {/* Kontextuelle Sub-Navigation basierend auf dem aktuellen Bereich */}
-          {currentSubNavItems.map((item) => {
-            // Bestimme, ob der aktuelle Pfad mit dem Link übereinstimmt
-            const isActive = item.exact
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
+          {/* Bedingte Animation basierend auf dem Zustand der SubNav */}
+          {isMobileView ? (
+            // Einfaches Rendering ohne Animation für Mobile/Collapsed View
+            currentSubNavItems.map((item) => {
+              // Bestimme, ob der aktuelle Pfad mit dem Link übereinstimmt
+              const isActive = item.exact
+                ? pathname === item.href
+                : pathname.startsWith(item.href);
 
-            return (
-              <Button
-                key={item.href}
-                variant={undefined} // Variante entfernen (Test)
-                size="sm"
-                borderRadius="full"
-                bg={isActive ? "nav.activeGreen" : "transparent"}
-                color={isActive ? "black" : "gray.600"}
-                _hover={{ bg: isActive ? "nav.activeGreen" : "blackAlpha.100" }}
-                px={{ base: 2, md: 2.5, lg: 4 }} // Noch kompakteres Padding bei mittleren Größen
-                h={{ base: "9", md: "9", lg: "10" }} // Etwas kleinere Buttons bei mittleren Größen
-                fontWeight={isActive ? "semibold" : "normal"}
-                display={{ base: isActive ? "flex" : "none", md: "flex" }} // Nur aktiven auf base/sm zeigen
+              return (
+                <Button
+                  key={item.href}
+                  variant={undefined} // Variante entfernen (Test)
+                  size="sm"
+                  borderRadius="full"
+                  bg={isActive ? "nav.activeGreen" : "transparent"}
+                  color={isActive ? "black" : "gray.600"}
+                  _hover={{ bg: isActive ? "nav.activeGreen" : "blackAlpha.100" }}
+                  px={{ base: 2, md: 2.5, lg: 4 }} // Noch kompakteres Padding bei mittleren Größen
+                  h={{ base: "9", md: "9", lg: "10" }} // Etwas kleinere Buttons bei mittleren Größen
+                  fontWeight={isActive ? "semibold" : "normal"}
+                  display={{ base: isActive ? "flex" : "none", md: "flex" }} // Nur aktiven auf base/sm zeigen
+                  alignItems="center"
+                  gap={1.5} // Abstand zwischen Punkt und Text
+                  onClick={() => {
+                    router.push(item.href); // Client-seitige Navigation
+                    if (isMobileView) {
+                      setIsPopoverOpen(false); // Popover schließen nach Auswahl auf mobilen Geräten
+                    }
+                  }}
+                >
+                  {isActive && (
+                    <Box
+                      w="4px"
+                      h="4px"
+                      borderRadius="full"
+                      bg="black"
+                      mt="1px" // Leichte Anpassung der vertikalen Position
+                    />
+                  )}
+                  {item.label}
+                </Button>
+              );
+            })
+          ) : (
+            // Animiertes Rendering für Desktop/Expanded View
+            <AnimatePresence mode="wait">
+              <MotionFlex
+                key={currentSectionKey} // Wichtig für AnimatePresence, um Wechsel zu erkennen
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                layout // Wichtig für Breitenanimation
+                transition={{ layout: { type: "spring", stiffness: 150, damping: 25, mass: 1.5 } }} // Sehr sanfter Feder-Effekt für Breitenanimation
+                display="flex"
                 alignItems="center"
-                gap={1.5} // Abstand zwischen Punkt und Text
-                onClick={() => {
-                  router.push(item.href); // Client-seitige Navigation
-                  if (isMobileView) {
-                    setIsPopoverOpen(false); // Popover schließen nach Auswahl auf mobilen Geräten
-                  }
-                }}
+                gap={{ base: 0.5, md: 0.5, lg: 1 }}
               >
-                {isActive && (
-                  <Box
-                    w="4px"
-                    h="4px"
-                    borderRadius="full"
-                    bg="black"
-                    mt="1px" // Leichte Anpassung der vertikalen Position
-                  />
-                )}
-                {item.label}
-              </Button>
-            );
-          })}
-            </Flex>
+                {currentSubNavItems.map((item) => {
+                  // Bestimme, ob der aktuelle Pfad mit dem Link übereinstimmt
+                  const isActive = item.exact
+                    ? pathname === item.href
+                    : pathname.startsWith(item.href);
+
+                  return (
+                    <motion.div key={item.href} variants={itemVariants}>
+                      <Button
+                        variant={undefined} // Variante entfernen (Test)
+                        size="sm"
+                        borderRadius="full"
+                        bg={isActive ? "nav.activeGreen" : "transparent"}
+                        color={isActive ? "black" : "gray.600"}
+                        _hover={{ bg: isActive ? "nav.activeGreen" : "blackAlpha.100" }}
+                        px={{ base: 2, md: 2.5, lg: 4 }} // Noch kompakteres Padding bei mittleren Größen
+                        h={{ base: "9", md: "9", lg: "10" }} // Etwas kleinere Buttons bei mittleren Größen
+                        fontWeight={isActive ? "semibold" : "normal"}
+                        display="flex" // Immer anzeigen im Desktop-Modus
+                        alignItems="center"
+                        gap={1.5} // Abstand zwischen Punkt und Text
+                        onClick={() => {
+                          router.push(item.href); // Client-seitige Navigation
+                        }}
+                      >
+                        {isActive && (
+                          <Box
+                            w="4px"
+                            h="4px"
+                            borderRadius="full"
+                            bg="black"
+                            mt="1px" // Leichte Anpassung der vertikalen Position
+                          />
+                        )}
+                        {item.label}
+                      </Button>
+                    </motion.div>
+                  );
+                })}
+              </MotionFlex>
+            </AnimatePresence>
+          )}
+            </MotionFlex>
           </Popover.Trigger>
 
           {/* Popover-Inhalt für kleine Screens */}
@@ -319,23 +406,34 @@ export default function TopNav({ isExpanded = false, toggleSidebar, openDrawer, 
         {/* Dunkle Aktions-Icons (als Kreise) - nur anzeigen, wenn genug Platz vorhanden ist */}
         <Flex gap={2} align="center" display={shouldCollapseIcons ? "none" : "flex"}>
           {/* Nav Toggle Button entfernt - wird links neben der weißen Navigationsleiste platziert */}
-          {actionIcons.map((ActionIcon, index) => (
-            <IconButton
-              key={index}
-              aria-label={`Action ${index + 1}`}
-              variant="outline"
-              size="sm"
-              borderRadius="full"
-              width="36px"
-              height="36px"
-              padding={0}
-              borderColor="nav.iconOutlineColor" // Subtilere Rahmenfarbe für Outline-Buttons
-              color="nav.iconColor"
-              _hover={{ bg: "dark.700" }}
-            >
-              <Icon as={ActionIcon} boxSize={4} />
-            </IconButton>
-          ))}
+          {actionIcons.map((ActionIcon, index) => {
+            // Tooltip-Texte für die Aktionsbuttons
+            const tooltipTexts = [
+              "Dokumente",
+              "Kalender",
+              "Aufgaben",
+              "Benutzer"
+            ];
+
+            return (
+              <Tooltip key={index} content={tooltipTexts[index]} placement="bottom" showArrow>
+                <IconButton
+                  aria-label={tooltipTexts[index]}
+                  variant="outline"
+                  size="sm"
+                  borderRadius="full"
+                  width="36px"
+                  height="36px"
+                  padding={0}
+                  borderColor="nav.iconOutlineColor" // Subtilere Rahmenfarbe für Outline-Buttons
+                  color="nav.iconColor"
+                  _hover={{ bg: "dark.700" }}
+                >
+                  <Icon as={ActionIcon} boxSize={4} />
+                </IconButton>
+              </Tooltip>
+            );
+          })}
         </Flex>
 
         {/* Menu für zusammengefasste Icons - nur anzeigen, wenn nicht genug Platz vorhanden ist */}
@@ -375,29 +473,41 @@ export default function TopNav({ isExpanded = false, toggleSidebar, openDrawer, 
                   height="100%"
                   placeItems="center" // Zentriert die Items in ihren Grid-Zellen
                 >
-                  {actionIcons.map((ActionIcon, index) => (
-                    <Menu.Item
-                      key={index}
-                      value={`action-${index}`}
-                      asChild
-                    >
-                      <IconButton
-                        aria-label={`Action ${index + 1}`}
-                        variant="outline" // Gleicher Stil wie die ursprünglichen Icons
-                        size="sm"
-                        borderRadius="full" // Runder Button wie die ursprünglichen Icons
-                        width="36px"
-                        height="36px"
-                        padding={0}
-                        borderColor="nav.iconOutlineColor" // Subtilere Rahmenfarbe für Outline-Buttons
-                        color="nav.iconColor"
-                        _hover={{ bg: "dark.700" }}
-                        onClick={() => console.log(`Action ${index + 1} clicked`)}
+                  {actionIcons.map((ActionIcon, index) => {
+                    // Tooltip-Texte für die Aktionsbuttons
+                    const tooltipTexts = [
+                      "Dokumente",
+                      "Kalender",
+                      "Aufgaben",
+                      "Benutzer"
+                    ];
+
+                    return (
+                      <Menu.Item
+                        key={index}
+                        value={`action-${index}`}
+                        asChild
                       >
-                        <Icon as={ActionIcon} boxSize={4} />
-                      </IconButton>
-                    </Menu.Item>
-                  ))}
+                        <Tooltip content={tooltipTexts[index]} placement="bottom" showArrow>
+                          <IconButton
+                            aria-label={tooltipTexts[index]}
+                            variant="outline" // Gleicher Stil wie die ursprünglichen Icons
+                            size="sm"
+                            borderRadius="full" // Runder Button wie die ursprünglichen Icons
+                            width="36px"
+                            height="36px"
+                            padding={0}
+                            borderColor="nav.iconOutlineColor" // Subtilere Rahmenfarbe für Outline-Buttons
+                            color="nav.iconColor"
+                            _hover={{ bg: "dark.700" }}
+                            onClick={() => console.log(`Action ${index + 1} clicked`)}
+                          >
+                            <Icon as={ActionIcon} boxSize={4} />
+                          </IconButton>
+                        </Tooltip>
+                      </Menu.Item>
+                    );
+                  })}
                 </Box>
               </Menu.Content>
             </Menu.Positioner>
@@ -407,38 +517,42 @@ export default function TopNav({ isExpanded = false, toggleSidebar, openDrawer, 
 
       {/* Rechter Bereich: Finale Aktionen & User */}
       <Flex gap={3} align="center" position="relative">
-        <IconButton
-          aria-label="Benachrichtigungen"
-          variant="ghost"
-          size="sm"
-          borderRadius="full"
-          width="36px"
-          height="36px"
-          padding={0}
-          display={shouldCollapseBellIcon ? "none" : "inline-flex"} // Bei 1150px ausblenden
-          bg="nav.iconCircleBg"
-          color="nav.iconColor"
-          _hover={{ bg: "dark.700" }}
-        >
-          <Icon as={LuBell} boxSize={4} />
-        </IconButton>
-        <IconButton
-          aria-label="Einstellungen"
-          variant="ghost"
-          size="sm"
-          borderRadius="full"
-          width="36px"
-          height="36px"
-          padding={0}
-          display={shouldCollapseSettings ? "none" : "inline-flex"} // Dynamisch basierend auf verfügbarem Platz
-          bg="nav.iconCircleBg"
-          color="nav.iconColor"
-          _hover={{ bg: "dark.700" }}
-          // Ref entfernt
-        >
-          <Icon as={LuSettings} boxSize={4} />
-        </IconButton>
-        <UserMenu userName={user?.displayName} avatarUrl={user?.avatarUrl} />
+        <Tooltip content="Benachrichtigungen" placement="bottom" showArrow>
+          <IconButton
+            aria-label="Benachrichtigungen"
+            variant="ghost"
+            size="sm"
+            borderRadius="full"
+            width="36px"
+            height="36px"
+            padding={0}
+            display={shouldCollapseBellIcon ? "none" : "inline-flex"} // Bei 1150px ausblenden
+            bg="nav.iconCircleBg"
+            color="nav.iconColor"
+            _hover={{ bg: "dark.700" }}
+          >
+            <Icon as={LuBell} boxSize={4} />
+          </IconButton>
+        </Tooltip>
+        <Tooltip content="Einstellungen" placement="bottom" showArrow>
+          <IconButton
+            aria-label="Einstellungen"
+            variant="ghost"
+            size="sm"
+            borderRadius="full"
+            width="36px"
+            height="36px"
+            padding={0}
+            display={shouldCollapseSettings ? "none" : "inline-flex"} // Dynamisch basierend auf verfügbarem Platz
+            bg="nav.iconCircleBg"
+            color="nav.iconColor"
+            _hover={{ bg: "dark.700" }}
+            // Ref entfernt
+          >
+            <Icon as={LuSettings} boxSize={4} />
+          </IconButton>
+        </Tooltip>
+        <UserMenu />
       </Flex>
     </Flex>
   );

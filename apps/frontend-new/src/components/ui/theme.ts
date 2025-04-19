@@ -1,22 +1,57 @@
 // apps/frontend-new/src/components/ui/theme.ts
 import { createSystem, defaultConfig, defineConfig, defineSemanticTokens } from "@chakra-ui/react";
 
+// Keyframes für Animationen
+const keyframes = {
+  blink: {
+    "0%, 100%": { opacity: 1 },
+    "50%": { opacity: 0 }
+  },
+  pulseSlow: {
+    "0%, 100%": { opacity: 0.1 },
+    "50%": { opacity: 0.3 }
+  },
+  typing: {
+    from: { width: 0 },
+    to: { width: "100%" }
+  },
+  sweep: {
+    "0%": { left: "-100%" },
+    "100%": { left: "100%" }
+  },
+  spin: {
+    to: { transform: "rotate(360deg)" }
+  },
+  ping: {
+    "0%": { transform: "scale(0.8)", opacity: 0.8 },
+    "50%": { opacity: 0.3 },
+    "100%": { transform: "scale(1.2)", opacity: 0 }
+  },
+  scan: {
+    "0%": { transform: "translateX(0)" },
+    "100%": { transform: "translateX(33.33%)" }
+  },
+  buttonSpotlight: {
+    "0%": { transform: "translateX(0)" },
+    "100%": { transform: "translateX(200%)" }
+  }
+};
+
+// Animationen
+const animations = {
+  blink: { value: `${keyframes.blink.toString()} 1s step-end infinite` },
+  pulseSlow: { value: `${keyframes.pulseSlow.toString()} 3s infinite` },
+  typing: { value: `${keyframes.typing.toString()} 2s steps(6, end) 1s 1 normal both` },
+  sweep: { value: `${keyframes.sweep.toString()} 12s linear infinite` },
+  spin: { value: `${keyframes.spin.toString()} 10s linear infinite` },
+  ping: { value: `${keyframes.ping.toString()} 3s cubic-bezier(0, 0, 0.2, 1) infinite` },
+  scan: { value: `${keyframes.scan.toString()} 6s linear infinite` },
+  buttonSpotlight: { value: `${keyframes.buttonSpotlight.toString()} 3s ease-out infinite` }
+};
+
 // Farbdefinitionen - KORRIGIERTE Struktur mit value-Objekten
 const colors = {
-  brand: {
-    DEFAULT: { value: "#39E580" },
-    50: { value: "#E1FCEF" },
-    100: { value: "#C6F7DE" },
-    200: { value: "#A3F0CC" },
-    300: { value: "#7BEAAB" },
-    400: { value: "#52E38C" },
-    500: { value: "#39E580" },
-    600: { value: "#25D96A" },
-    700: { value: "#1BB755" },
-    800: { value: "#139342" },
-    900: { value: "#0B6129" },
-    950: { value: "#063C1A" },
-  },
+
   dark: {
     50: { value: "#F0F2F5" },
     100: { value: "#E1E5EB" },
@@ -43,6 +78,7 @@ const colors = {
     900: { value: "#111827" },
     950: { value: "#0D1117" },
   },
+
   // Farben für TopNav - Umbenannte Basis-Tokens
   navBgBase: { value: "#FFFFFF" },
   navActiveGreenBase: { value: "#90FF00" },
@@ -66,12 +102,7 @@ const semanticTokens = defineSemanticTokens({
     // Randfarben
     border: { value: { base: "{colors.gray.200}", _dark: "{colors.dark.700}" } },
     "border.subtle": { value: { base: "{colors.gray.100}", _dark: "{colors.dark.800}" } },
-    // Brand-Farbe
-    brand: {
-      solid: { value: "{colors.brand.500}" },
-      contrast: { value: "white" },
-      fg: { value: "{colors.brand.600}" },
-    },
+
     // Navigation Tokens mit korrekten Referenzen auf umbenannte Basis-Tokens
     nav: {
       bg: { value: { base: "{colors.navBgBase}", _dark: "{colors.navBgBase}" } }, // Weiß bleibt weiß
@@ -93,9 +124,11 @@ const fonts = {
 
 const config = defineConfig({
   theme: {
+    keyframes,
     tokens: {
       colors,
       fonts,
+      animations,
     },
     semanticTokens,
   },

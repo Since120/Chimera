@@ -21,6 +21,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard) // Re-enable the guard
   async getSession(@Req() req: any): Promise<SessionDto> {
     this.logger.log('=== GET SESSION START ===');
+    this.logger.log(`getSession: Request headers: ${JSON.stringify(req.headers)}`);
+    this.logger.log(`getSession: Request method: ${req.method}`);
+    this.logger.log(`getSession: Request URL: ${req.url}`);
+
     try { // Wrap the entire logic in a try...catch block
       // req.user should now contain { supabaseUserId: string } from the validated token
       this.logger.log(`getSession: Request user object: ${JSON.stringify(req.user)}`);
