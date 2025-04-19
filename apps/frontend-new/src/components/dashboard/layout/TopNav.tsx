@@ -457,13 +457,14 @@ export default function TopNav({ isExpanded = false, toggleSidebar, openDrawer, 
             </Menu.Trigger>
             <Menu.Positioner>
               <Menu.Content
-                bg="dark.800"
-                borderColor="dark.700"
-                boxShadow="lg"
-                borderRadius="md"
-                p={2} // Weniger Padding für ein kompakteres Quadrat
+                bg="#10141C" // Dunklerer, satterer Hintergrund
+                borderColor="transparent" // Rand entfernen
+                boxShadow="0 12px 28px -6px rgba(0,0,0,0.35), 0 8px 12px -8px rgba(0,0,0,0.25)" // Weicherer, mehrstufiger Schatten
+                borderRadius="lg" // Größerer Radius
+                p="1.5" // Angepasstes Padding
                 width="120px" // Kleinere Breite für ein kompakteres Quadrat
                 height="120px" // Kleinere Höhe für ein kompakteres Quadrat
+                zIndex="popover" // zIndex setzen
               >
                 <Box
                   display="grid"
@@ -552,7 +553,8 @@ export default function TopNav({ isExpanded = false, toggleSidebar, openDrawer, 
             <Icon as={LuSettings} boxSize={4} />
           </IconButton>
         </Tooltip>
-        <UserMenu />
+        {/* UserMenu mit den neuen Props */}
+        <UserMenu showBellInMenu={shouldCollapseBellIcon} showSettingsInMenu={shouldCollapseSettings} />
       </Flex>
     </Flex>
   );

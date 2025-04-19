@@ -49,7 +49,8 @@ export default function DashboardLayout({
   return (
     <Flex
       h="100vh"
-      overflow="hidden" // Verhindert Scrollbars
+      overflowX="hidden" // Verhindert horizontale Scrollbars
+      overflowY="hidden" // Verhindert vertikale Scrollbars
       // Direkte Styling-Anwendung mit style-Prop
       style={{
         backgroundColor: "#111822", // Direkter Hex-Code statt Token
@@ -70,7 +71,7 @@ export default function DashboardLayout({
         direction="column"
         flex="1"
         overflowY="auto"
-        overflowX="hidden" // Verhindert horizontale Scrollbars
+        // overflowX="hidden" wurde auf das äußere Flex-Element verschoben
         position="relative"
         boxShadow={actuallyExpanded ?
           "0 20px 25px -5px rgba(0,0,0,0.4), 0 10px 10px -5px rgba(0,0,0,0.3)" :
@@ -82,7 +83,7 @@ export default function DashboardLayout({
         bg={actuallyExpanded ? "rgba(16, 23, 34, 0.98)" : "transparent"} // Leicht hellerer Hintergrund
         zIndex="2" // Stellt sicher, dass der Hauptinhalt über der Sidebar liegt
         transition="all 0.3s ease-in-out"
-        transform={actuallyExpanded ? "perspective(800px) translateZ(40px) translateY(-4px) scale(0.98)" : "none"} // Angepasste Z-Translation, Y-Translation und Skalierung für Elevation-Effekt ohne Scrollbars
+        transform={actuallyExpanded ? "perspective(800px) translateZ(40px) scale(0.98)" : "none"} // Angepasste Z-Translation und Skalierung für Elevation-Effekt ohne Y-Translation
       >
         {/* Unterer Schatten-Overlay für zusätzliche Tiefenwirkung */}
         <Box
