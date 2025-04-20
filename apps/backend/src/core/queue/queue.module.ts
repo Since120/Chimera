@@ -1,5 +1,5 @@
 // apps\backend\src\core\queue\queue.module.ts
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChannelRenameProcessor } from './channel-rename.processor';
@@ -10,7 +10,7 @@ const QUEUE_NAME = 'channel-rename';
 
 @Module({
   imports: [
-    DiscordApiModule,
+    forwardRef(() => DiscordApiModule),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

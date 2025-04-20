@@ -1,10 +1,9 @@
-import { Controller, Get, Param, UseGuards, Logger, HttpException, HttpStatus, Inject, forwardRef } from '@nestjs/common';
+import { Controller, Get, Param, Logger, HttpException, HttpStatus, Inject, forwardRef } from '@nestjs/common';
 import { GuildService } from '../services/guild.service';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+// JwtAuthGuard wird global registriert
 import { BotGatewayService } from '../../bot-gateway/bot-gateway.service';
 
 @Controller('guilds')
-@UseGuards(JwtAuthGuard)
 export class GuildController {
   private readonly logger = new Logger(GuildController.name);
 

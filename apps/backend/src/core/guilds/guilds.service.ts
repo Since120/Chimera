@@ -8,8 +8,9 @@ export class GuildsService {
 
   /**
    * Get all guilds available to a user
+   * @deprecated Use direct database access and AccessControlService in AuthController instead
    */
-  async getUserGuilds(userId: string): Promise<GuildSelectionInfoDto[]> {
+  async getUserGuilds(userId: string): Promise<Omit<GuildSelectionInfoDto, 'permissions'>[]> {
     const { data, error } = await this.databaseService.adminClient
       .from('guild_members')
       .select(`
@@ -44,7 +45,7 @@ export class GuildsService {
         discord_id: guild.discord_id,
         name: guild.name,
         icon_url: guild.icon_url,
-        is_admin: this.isUserAdmin(item.discord_roles, guild.owner_id === userId),
+        is_admin: this.isUserAdminCheck(item.discord_roles, guild.owner_id === userId),
       };
     });
   }
@@ -142,7 +143,7 @@ export class GuildsService {
     }
 
     // Check if user has admin permissions based on roles
-    if (!this.isUserAdmin(member.discord_roles, false)) {
+    if (!this.isUserAdminCheck(member.discord_roles, false)) {
       throw new ForbiddenException(
         `User ${userId} does not have admin permissions in guild ${guildId}`,
       );
@@ -150,9 +151,10 @@ export class GuildsService {
   }
 
   /**
-   * Helper method to check if a user has admin permissions based on roles
+   * Helper method to check if a user has admin permissions based on roles or ownership.
+   * Made public to be used by AuthController.
    */
-  private isUserAdmin(roles: string[], isOwner: boolean): boolean {
+  public isUserAdminCheck(roles: string[] | null, isOwner: boolean): boolean {
     if (isOwner) {
       return true;
     }

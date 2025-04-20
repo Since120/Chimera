@@ -9,6 +9,7 @@ import sys
 # auch wenn Sie unter Windows arbeiten. Das Skript normalisiert sie.
 TARGET_DIRECTORIES = [
     "apps/backend/src",
+    "packages/shared-types/src",
     # Fügen Sie hier weitere relative Pfade hinzu
     # "pfad/zum/anderen/basis-ordner",
 ]

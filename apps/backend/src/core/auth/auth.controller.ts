@@ -1,8 +1,10 @@
-import { Controller, Get, Logger, Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { Controller, Get, Logger, Req } from '@nestjs/common';
+// JwtAuthGuard wird global registriert
 import { DatabaseService } from '../../database';
 import { UserProfileDto, GuildSelectionInfoDto, SessionDto } from 'shared-types';
 import * as crypto from 'crypto';
+import { AccessControlService } from '../permissions/access-control.service';
+import { GuildsService } from '../guilds/guilds.service';
 
 @Controller('api/v1/auth')
 export class AuthController {
@@ -10,6 +12,8 @@ export class AuthController {
 
   constructor(
     private readonly databaseService: DatabaseService, // Inject DatabaseService
+    private readonly accessControlService: AccessControlService, // Inject AccessControlService
+    private readonly guildsService: GuildsService, // Inject GuildsService
   ) {}
 
   // Removed /discord and /discord/callback routes as they are handled by Supabase Auth
@@ -18,7 +22,7 @@ export class AuthController {
    * Returns the current session information based on a validated Supabase JWT
    */
   @Get('session')
-  @UseGuards(JwtAuthGuard) // Re-enable the guard
+  // JwtAuthGuard wird global registriert
   async getSession(@Req() req: any): Promise<SessionDto> {
     this.logger.log('=== GET SESSION START ===');
     this.logger.log(`getSession: Request headers: ${JSON.stringify(req.headers)}`);
@@ -153,13 +157,15 @@ export class AuthController {
           .from('guild_members')
           .select(`
             guild_id,
+            discord_roles,
             guilds:guild_id (
               id,
               discord_id,
               name,
               icon_url,
               bot_status,
-              bot_present
+              bot_present,
+              owner_id
             )
           `)
           .eq('user_id', typedUserProfile.id);
@@ -176,9 +182,11 @@ export class AuthController {
           guildMembers = [];
         }
 
-        // 3. Transform guild data and filter by active bot status
-        this.logger.log(`getSession: Transforming ${guildMembers.length} guild member entries.`);
-        const availableGuilds = guildMembers.map(member => {
+        // 3. Transform guild data, filter by active bot status, AND get permissions
+        this.logger.log(`getSession: Transforming ${guildMembers.length} guild member entries and fetching permissions.`);
+
+        // Verwende Promise.all, um Berechtigungen parallel abzurufen
+        const availableGuildsPromises = guildMembers.map(async (member) => {
           const guild = member.guilds as any;
           if (!guild || !guild.id) {
             this.logger.warn(`getSession: Found guild_member entry with null or invalid guild data for user ${typedUserProfile.id}, member guild_id: ${member.guild_id}`);
@@ -191,14 +199,43 @@ export class AuthController {
             return null;
           }
 
+          // Ermittle effektive Berechtigungen für diese Guild
+          const effectivePermissions = await this.accessControlService.calculateEffectivePermissions(
+            typedUserProfile.id, // user_profile_id
+            guild.id // guild_id (DB UUID)
+          );
+          this.logger.debug(`Permissions for guild ${guild.name}: ${JSON.stringify(effectivePermissions)}`);
+
+          // Ermittle Admin-Status mit der GuildsService-Methode
+          const isAdmin = this.guildsService.isUserAdminCheck(
+            member.discord_roles || [],
+            guild.owner_id === typedUserProfile.id
+          );
+
           return {
             id: guild.id,
             discord_id: guild.discord_id,
             name: guild.name,
             icon_url: guild.icon_url,
-            is_admin: false, // TODO: Implement proper admin check
+            is_admin: isAdmin, // Admin-Status
+            permissions: effectivePermissions, // Berechtigungen hinzufügen
           };
-        }).filter(g => g !== null) as GuildSelectionInfoDto[];
+        });
+
+        // Warte auf alle Promises und filtere null-Werte
+        const availableGuildsRaw = await Promise.all(availableGuildsPromises);
+
+        // Explizite Typprüfung und Konvertierung zu GuildSelectionInfoDto[]
+        const availableGuilds: GuildSelectionInfoDto[] = availableGuildsRaw
+          .filter((g): g is NonNullable<typeof g> => g !== null)
+          .map(g => ({
+            id: g.id,
+            discord_id: g.discord_id,
+            name: g.name,
+            icon_url: g.icon_url,
+            is_admin: g.is_admin,
+            permissions: g.permissions || [], // Stelle sicher, dass permissions immer ein Array ist
+          }));
 
         this.logger.log(`getSession: Found ${availableGuilds.length} available guilds for user ${typedUserProfile.username}`);
 

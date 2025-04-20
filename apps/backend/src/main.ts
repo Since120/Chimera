@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { CustomLoggerService } from './core/logger/custom-logger.service';
+import { JwtAuthGuard } from './core/auth/guards/jwt-auth.guard'; // Guard importieren
 
 async function bootstrap() {
   // Erstelle einen benutzerdefinierten Logger
@@ -30,6 +31,11 @@ async function bootstrap() {
     credentials: true, // Important for cookies/auth headers
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
+
+  // Globalen Guard korrekt über Dependency Injection holen und registrieren
+  const jwtAuthGuard = app.get(JwtAuthGuard); // Guard aus dem App-Kontext holen
+  app.useGlobalGuards(jwtAuthGuard); // Guard global anwenden
+  logger.log('Global JwtAuthGuard registered via DI.');
 
   // Get port from config
   const port = configService.get<number>('PORT', 3000);

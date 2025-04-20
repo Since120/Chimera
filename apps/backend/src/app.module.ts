@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CoreModule } from './core';
@@ -9,11 +9,11 @@ import { LoggerModule } from './core/logger/logger.module';
 
 @Module({
   imports: [
-    CoreModule,
-    DiscordApiModule,
-    DynamicVoicesModule,
-    QueueModule,
-    LoggerModule,
+    forwardRef(() => CoreModule),
+    forwardRef(() => DiscordApiModule),
+    forwardRef(() => DynamicVoicesModule),
+    forwardRef(() => QueueModule),
+    forwardRef(() => LoggerModule),
   ],
   controllers: [AppController],
   providers: [AppService],

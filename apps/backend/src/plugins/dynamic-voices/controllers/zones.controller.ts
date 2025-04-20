@@ -6,17 +6,15 @@ import {
   Delete,
   Body,
   Param,
-  UseGuards,
   Logger,
   HttpException,
   HttpStatus
 } from '@nestjs/common';
 import { ZonesService } from '../services/zones.service';
 import { ZoneDto, CreateZoneDto, UpdateZoneDto } from 'shared-types';
-import { JwtAuthGuard } from '../../../core/auth/guards/jwt-auth.guard';
+// JwtAuthGuard wird global registriert
 
 @Controller()
-@UseGuards(JwtAuthGuard)
 export class ZonesController {
   private readonly logger = new Logger(ZonesController.name);
 

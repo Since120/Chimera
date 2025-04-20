@@ -1,9 +1,7 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { BotGatewayService } from './bot-gateway.service';
-import { JwtAuthGuard } from '../auth';
 
 @Controller('bot-gateway')
-@UseGuards(JwtAuthGuard)
 export class BotGatewayController {
   constructor(private readonly botGatewayService: BotGatewayService) {}
 

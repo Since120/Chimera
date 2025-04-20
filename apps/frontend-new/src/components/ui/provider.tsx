@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { ChakraProvider } from "@chakra-ui/react"
+import { QueryClientProvider } from "@tanstack/react-query" // Hinzufügen
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools" // Hinzufügen
 import { system } from "./theme" // Unser System importieren
 import {
   ColorModeProvider,
   type ColorModeProviderProps,
 } from "./color-mode"
 import { AuthProvider } from "@/context/auth-context"
+import { queryClient } from "@/lib/react-query" // Hinzufügen
 
 export function Provider(props: ColorModeProviderProps) {
   // Verwende einen State, um zu verfolgen, ob wir auf dem Client sind
@@ -25,10 +28,14 @@ export function Provider(props: ColorModeProviderProps) {
 
   // Wenn gemountet, rendere die Provider
   return (
-    <ChakraProvider value={system}> {/* Unser System verwenden */}
-      <AuthProvider>
-        <ColorModeProvider {...props} />
-      </AuthProvider>
-    </ChakraProvider>
+    <QueryClientProvider client={queryClient}> {/* QueryClientProvider als äußersten Client-seitigen Provider */}
+      <ChakraProvider value={system}> {/* Unser System verwenden */}
+        <AuthProvider>
+          <ColorModeProvider {...props} />
+          {/* React Query DevTools (nur in Entwicklung sichtbar) */}
+          <ReactQueryDevtools initialIsOpen={false} />
+        </AuthProvider>
+      </ChakraProvider>
+    </QueryClientProvider>
   )
 }

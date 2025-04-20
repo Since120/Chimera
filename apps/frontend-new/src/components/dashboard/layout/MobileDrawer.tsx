@@ -1,8 +1,11 @@
 "use client";
 
-import { Drawer, Flex, Text, Icon, IconButton } from "@chakra-ui/react";
+import { Flex, Text, Icon, IconButton, Box } from "@chakra-ui/react";
+import { Drawer } from "@chakra-ui/react";
+import { Separator } from "@chakra-ui/react";
 import { LuX, LuFolderKanban, LuLayoutDashboard, LuListTodo, LuActivity, LuSettings } from "react-icons/lu";
 import { useRouter } from "next/navigation";
+import GuildSelector from "./GuildSelector"; // Importieren
 
 // Gemeinsame Navigationspunkte - identisch mit denen in SideNav
 const navItems = [
@@ -27,7 +30,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
   };
 
   return (
-    <Drawer.Root open={isOpen} onOpenChange={({ open }) => !open && onClose()} placement="left">
+    <Drawer.Root open={isOpen} onOpenChange={({ open }) => !open && onClose()} placement="start">
       <Drawer.Backdrop bg="blackAlpha.600" />
       <Drawer.Positioner>
         <Drawer.Content
@@ -48,7 +51,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                   aria-label="Schließen"
                   variant="ghost"
                   size="sm"
-                  icon={<Icon as={LuX} boxSize={5} />}
+                  children={<Icon as={LuX} boxSize={5} />}
                   _hover={{ bg: "whiteAlpha.200" }}
                   onClick={onClose} // Explizit onClose aufrufen
                 />
@@ -56,8 +59,16 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
             </Flex>
           </Drawer.Header>
 
-          <Drawer.Body p={0}>
-            <Flex direction="column" gap={1} px={3} py={2}>
+          <Drawer.Body p={0} display="flex" flexDirection="column">
+            {/* GuildSelector für Mobile */}
+            <Box px={3} py={3}>
+              <GuildSelector variant="mobile" />
+            </Box>
+
+            <Separator borderColor="dark.600" />
+
+            {/* Navigationspunkte */}
+            <Flex direction="column" gap={1} px={3} py={2} flex="1" overflowY="auto">
               {navItems.map((item) => (
                 <Flex
                   key={item.label}

@@ -6,7 +6,8 @@ import {
   Icon,
   Button,
   Flex,
-  useDisclosure
+  useDisclosure,
+  Image
 } from "@chakra-ui/react";
 import { useAuth } from "@/context/auth-context";
 import { LuLogOut, LuBell, LuSettings } from "react-icons/lu";
@@ -20,6 +21,7 @@ interface UserMenuProps {
 export default function UserMenu({ showBellInMenu = false, showSettingsInMenu = false }: UserMenuProps) {
   const { user, logout } = useAuth();
   const userName = user?.username || 'Benutzer'; // Fallback-Name
+  const avatarUrl = user?.avatar_url; // Avatar-URL holen
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const avatarRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -58,23 +60,39 @@ export default function UserMenu({ showBellInMenu = false, showSettingsInMenu = 
         w="10"
         h="10"
         borderRadius="full"
-        bg="gray.600"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        color="white"
-        fontWeight="bold"
-        fontSize="md"
         cursor="pointer"
         border="2px solid"
         borderColor="whiteAlpha.300"
         _hover={{ borderColor: "nav.activeGreen" }}
         _focusVisible={{ outline: "2px solid", outlineColor: "nav.activeGreen", outlineOffset: "2px" }}
-        transition="all 0.2s"
+        transition="border-color 0.2s"
         overflow="hidden"
         onClick={isOpen ? onClose : onOpen}
+        position="relative"
       >
-        {user?.username ? user.username.charAt(0).toUpperCase() : "U"}
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
+            alt={userName}
+            w="full"
+            h="full"
+            objectFit="cover"
+            loading="lazy"
+          />
+        ) : (
+          <Flex
+            w="full"
+            h="full"
+            bg="gray.600"
+            color="white"
+            fontWeight="bold"
+            fontSize="md"
+            align="center"
+            justify="center"
+          >
+            {userName.charAt(0).toUpperCase()}
+          </Flex>
+        )}
       </Box>
 
       {/* Dropdown-Menü */}

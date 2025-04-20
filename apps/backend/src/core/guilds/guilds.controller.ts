@@ -1,9 +1,7 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Req } from '@nestjs/common';
 import { GuildsService } from './guilds.service';
-import { JwtAuthGuard } from '../auth';
 
 @Controller('guilds')
-@UseGuards(JwtAuthGuard)
 export class GuildsController {
   constructor(private readonly guildsService: GuildsService) {}
 
@@ -26,11 +24,11 @@ export class GuildsController {
       req.user.id,
       id,
     );
-    
+
     if (!isMember) {
       return { error: 'You are not a member of this guild' };
     }
-    
+
     return this.guildsService.getGuildById(id);
   }
 

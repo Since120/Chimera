@@ -8,6 +8,7 @@ import Link from "next/link";
 import { mainNavItems } from "@/config/navigation";
 import React from "react";
 import { usePathname } from "next/navigation";
+import GuildSelector from "./GuildSelector"; // Importieren
 
 // Motion-Komponenten definieren
 const MotionBox = motion(chakra.div);
@@ -211,13 +212,25 @@ export default function SideNav({ isExpanded }: SideNavProps) {
       borderRightWidth="0px"
       borderColor="transparent" // Kein Rand für die Sidebar
     >
+      {/* Neuer Bereich für GuildSelector - auf gleicher Höhe wie TopNav Logo */}
+      <Flex
+        justifyContent={showExpanded ? "flex-start" : "center"} // Zentriert wenn collapsed
+        mb={6} // Abstand nach unten
+        mt={4} // Abstand nach oben hinzugefügt, damit es tiefer ist
+        px={showExpanded ? 0 : 0} // Kein extra Padding hier
+        alignItems="center" // Vertikal zentrieren im Flex
+        h="10" // Höhe passend zum Avatar
+      >
+        <GuildSelector variant={showExpanded ? 'expanded' : 'collapsed'} />
+      </Flex>
+
       {/* Navigationspunkte - immer vertikal zentriert */}
       <Flex
         direction="column"
         gap={3}
         flex="1"
         justifyContent="center" // Immer zentrieren, unabhängig vom Zustand
-        height="100%"
+        height="100%" // Volle Höhe für Zentrierung
       >
         <AnimatePresence mode="sync">
           {mainNavItems.map((item) => (

@@ -7,7 +7,6 @@ import {
   Body,
   Param,
   Query,
-  UseGuards,
   Logger,
   HttpException,
   HttpStatus
@@ -20,10 +19,9 @@ import {
   ScopeType,
   CategoryDiscordRolePermissionDto
 } from 'shared-types';
-import { JwtAuthGuard } from '../../../core/auth/guards/jwt-auth.guard';
+// JwtAuthGuard wird global registriert
 
 @Controller('categories')
-@UseGuards(JwtAuthGuard)
 export class CategoriesController {
   private readonly logger = new Logger(CategoriesController.name);
 

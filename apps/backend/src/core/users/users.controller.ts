@@ -1,10 +1,8 @@
-import { Body, Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../auth';
 import { UpdateUserProfileDto } from 'shared-types';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

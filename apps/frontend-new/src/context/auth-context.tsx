@@ -43,20 +43,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // --- Stabile Funktionen ---
   const handleLogout = useCallback(async (redirect = true) => {
+    console.log('[AuthContext Logout] Initiating explicit state reset...');
+    setUser(null);
+    setAvailableGuilds([]);
+    setToken(null);
+    setIsAuthenticated(false);
+    setLoading(true); // Loading starten
+
     console.log('handleLogout: Starting logout process...');
     const currentPath = window.location.pathname;
     console.log(`handleLogout: Current path: ${currentPath}, redirect: ${redirect}`);
 
-    // Setze loading auf true, um Ladeindikator anzuzeigen
-    setLoading(true);
-
-    // Lokalen Storage leeren
     const tokenKey = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY || 'chimera_auth_token';
     console.log(`handleLogout: Clearing local storage (token key: ${tokenKey})`);
     localStorage.removeItem(tokenKey);
     localStorage.removeItem('selectedGuildId');
 
-    // Supabase abmelden
     try {
       console.log('handleLogout: Calling supabase.auth.signOut()...');
       const { error } = await supabase.auth.signOut();
@@ -65,29 +67,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         console.log('handleLogout: Supabase signOut successful.');
       }
+
+      // Redirect und Loading beenden nach erfolgreichem oder fehlgeschlagenem signOut
+      if (redirect && !currentPath.startsWith('/login')) {
+        console.log('[AuthContext Logout] Redirecting to /login.');
+        router.replace('/login');
+      } else {
+        console.log(`[AuthContext Logout] No redirect needed or already on login page.`);
+      }
+      console.log('[AuthContext Logout] Resetting loading state to false after try.');
+      setLoading(false); // Loading hier beenden
+
     } catch (error) {
       console.error('handleLogout: Unexpected signOut error:', error);
-    }
-
-    // State zurücksetzen
-    console.log('handleLogout: Resetting auth state...');
-    setUser(null);
-    setAvailableGuilds([]);
-    setToken(null);
-    setIsAuthenticated(false);
-    setLoading(false); // Loading zurücksetzen
-
-    // Ggf. Redirect
-    if (redirect && !currentPath.startsWith('/login')) {
-      console.log('handleLogout: Redirecting to /login');
-      // Kurze Verzögerung, um Race Conditions zu vermeiden
-      setTimeout(() => {
+      // Auch im Fehlerfall Loading beenden und ggf. Redirect
+      if (redirect && !currentPath.startsWith('/login')) {
+        console.log('[AuthContext Logout] Redirecting to /login after catch.');
         router.replace('/login');
-      }, 100);
-    } else {
-      console.log(`handleLogout: No redirect needed (redirect=${redirect}, currentPath=${currentPath})`);
+      }
+      console.log('[AuthContext Logout] Resetting loading state to false after catch.');
+      setLoading(false); // Loading auch im Fehlerfall beenden
     }
-  }, [router]);
+  }, [router]); // router als Abhängigkeit
 
   const fetchBackendSession = useCallback(async (supabaseToken: string): Promise<SessionDto | null> => {
     console.log('[AuthContext] fetchBackendSession: Fetching backend session with token:', supabaseToken ? `${supabaseToken.substring(0, 10)}...` : 'No token');
@@ -137,8 +138,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // --- Auth State Listener ---
   useEffect(() => {
-    console.log('[AuthContext] Setting up onAuthStateChange listener');
-    setLoading(true); // Set loading true when listener starts
+    console.log('[AuthContext Init Effect] Explicitly resetting state to loading...');
+    setUser(null);
+    setAvailableGuilds([]);
+    setToken(null);
+    setIsAuthenticated(false);
+    setLoading(true); // Explizit auf true setzen
+
+    console.log('[AuthContext Init Effect] Setting up onAuthStateChange listener and checking session');
 
     let authListener: { subscription?: { unsubscribe: () => void } } = {};
 
@@ -188,10 +195,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         async (event: AuthChangeEvent, session: Session | null) => {
           console.log('[AuthContext] Auth event received:', event, 'Session present:', !!session, 'Token:', session?.access_token ? `${session.access_token.substring(0, 10)}...` : 'none');
           try {
-            // Bei SIGNED_OUT immer ausloggen
+            // Bei SIGNED_OUT nur State zurücksetzen, KEINEN Redirect auslösen
             if (event === 'SIGNED_OUT') {
-              console.log('[AuthContext] Processing SIGNED_OUT event');
-              await handleLogout(true); // Logout with redirect
+              console.log('[AuthContext] Processing SIGNED_OUT event - resetting local state only.');
+              setUser(null);
+              setAvailableGuilds([]);
+              setToken(null);
+              setIsAuthenticated(false);
+              // setLoading hier NICHT ändern, da der Haupt-Logout-Flow dies steuert
               return;
             }
 
@@ -206,9 +217,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               // Backend-Session abrufen
               await fetchBackendSession(session.access_token);
             } else {
-              // Kein Token vorhanden
-              console.warn(`[AuthContext] ${event} without token, logging out`);
-              await handleLogout(false); // Reset state without redirect
+              // Kein Token vorhanden bei anderen Events -> Fallback zum State Reset
+              console.warn(`[AuthContext] ${event} without token, resetting state.`);
+              setUser(null);
+              setAvailableGuilds([]);
+              setToken(null);
+              setIsAuthenticated(false);
+              setLoading(false); // Hier Loading beenden, da kein gültiger Login mehr vorliegt
             }
           } catch (error) {
             console.error('[AuthContext] Error in auth state change handler:', error);
@@ -397,6 +412,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       refreshSession,
     };
   }, [user, availableGuilds, token, loading, isAuthenticated, login, handleLogout, refreshSession]);
+
+  console.log(`[AuthContext Render] State before providing - loading: ${contextValue.loading}, isAuthenticated: ${contextValue.isAuthenticated}`);
 
   return (
     <AuthContext.Provider value={contextValue}>

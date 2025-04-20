@@ -107,8 +107,9 @@ export class AuthService {
         id: guild.id,
         discord_id: guild.discord_id,
         name: guild.name,
-        icon_url: guild.icon_url,
+        icon_url: guild.icon_url, // Bleibt undefined, wenn nicht vorhanden
         is_admin: false, // TODO: Implement proper admin check
+        permissions: [], // KORREKTUR: Leeres Array hinzufügen, um Typ zu erfüllen
       };
     });
 

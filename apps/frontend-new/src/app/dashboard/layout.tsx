@@ -6,6 +6,7 @@ import { Box, Flex, useBreakpointValue, useMediaQuery } from "@chakra-ui/react";
 import SideNav from "@/components/dashboard/layout/SideNav";
 import TopNav from "@/components/dashboard/layout/TopNav";
 import MobileDrawer from "@/components/dashboard/layout/MobileDrawer";
+import { GuildProvider } from "@/context/guild-context"; // Importieren
 
 export default function DashboardLayout({
   children,
@@ -47,20 +48,21 @@ export default function DashboardLayout({
   };
 
   return (
-    <Flex
-      h="100vh"
-      overflowX="hidden" // Verhindert horizontale Scrollbars
-      overflowY="hidden" // Verhindert vertikale Scrollbars
-      // Direkte Styling-Anwendung mit style-Prop
-      style={{
-        backgroundColor: "#111822", // Direkter Hex-Code statt Token
-        backgroundImage: `
-          radial-gradient(ellipse 40% 30% at 50% 0%, rgba(27, 37, 52, 0.5) 0%, transparent 80%),
-          radial-gradient(ellipse 30% 25% at 15% 15%, rgba(39, 55, 77, 0.4) 0%, transparent 70%),
-          radial-gradient(ellipse 50% 35% at 80% 90%, rgba(27, 37, 52, 0.3) 0%, transparent 75%)
-        `
-      }}
-    >
+    <GuildProvider> {/* Provider hier einfügen */}
+      <Flex
+        h="100vh"
+        overflowX="hidden" // Verhindert horizontale Scrollbars
+        overflowY="hidden" // Verhindert vertikale Scrollbars
+        // Direkte Styling-Anwendung mit style-Prop
+        style={{
+          backgroundColor: "#111822", // Direkter Hex-Code statt Token
+          backgroundImage: `
+            radial-gradient(ellipse 40% 30% at 50% 0%, rgba(27, 37, 52, 0.5) 0%, transparent 80%),
+            radial-gradient(ellipse 30% 25% at 15% 15%, rgba(39, 55, 77, 0.4) 0%, transparent 70%),
+            radial-gradient(ellipse 50% 35% at 80% 90%, rgba(27, 37, 52, 0.3) 0%, transparent 75%)
+          `
+        }}
+      >
     {/* Sidebar - unter md ausblenden, unter lg immer eingeklappt */}
     <Box display={{ base: "none", md: "block" }}>
       <SideNav isExpanded={actuallyExpanded} />
@@ -172,5 +174,6 @@ export default function DashboardLayout({
         onClose={() => setIsDrawerOpen(false)}
       />
     </Flex>
+    </GuildProvider>
   );
 }

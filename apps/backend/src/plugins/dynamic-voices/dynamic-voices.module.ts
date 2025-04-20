@@ -13,10 +13,10 @@ import { QueueModule } from '../../core/queue/queue.module';
 @Module({
   imports: [
     DatabaseModule,
-    DiscordApiModule,
+    forwardRef(() => DiscordApiModule),
     forwardRef(() => BotGatewayModule),
-    GuildModule,
-    QueueModule,
+    forwardRef(() => GuildModule),
+    forwardRef(() => QueueModule),
   ],
   controllers: [
     CategoriesController,

@@ -31,5 +31,6 @@ export interface GuildSelectionInfoDto {
   discord_id: string;
   name: string;
   icon_url?: string;
-  is_admin: boolean;
+  is_admin: boolean; // Bleibt vorerst, kann später durch Permissions ersetzt werden
+  permissions: string[]; // NEU: Effektive Permissions des Users für diese Guild
 }
