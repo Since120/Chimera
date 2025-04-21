@@ -177,91 +177,20 @@ export default function CategoriesPage() {
             w="full"
             h="full"
             p={6}
-            pt="70px" // Padding-Top > Nasen-Tiefe (60px)
             overflowY="auto"
             position="relative"
+            buttons={[
+              { label: 'Alle Kategorien', isActive: true },
+              { label: 'Entwurf', isActive: false },
+              { label: 'Aktiv', isActive: false },
+            ]}
+            buttonSpacing={2}
+            activeButtonBg="#90FF00" // Grün aus der TopBar-SubNavigation (nav.activeGreen)
+            inactiveButtonBg="#1E2536" // Grau aus dem Icon-Kreis der FilterBox
+            activeButtonColor="black"
+            inactiveButtonColor="white"
           >
-            {/* Buttons im Aushub */}
-            <Flex
-              position="absolute"
-              top="-60px" // Genau die Tiefe der Nase nach oben verschieben
-              left="50%"
-              transform="translateX(-50%)"
-              width="260px" // Breite des FLACHEN Teils (330-70=260px)
-              height="60px" // Höhe der Nase
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              gap={2}
-              zIndex={2}
-            >
-              <Button
-                variant="ghost"
-                bg="transparent"
-                color="white"
-                fontWeight="medium"
-                _hover={{ bg: "rgba(255,255,255,0.1)" }}
-                _active={{ bg: "rgba(255,255,255,0.15)" }}
-                borderRadius="md"
-                size="sm"
-                px={3}
-              >
-                Alle Kategorien
-              </Button>
-              <Button
-                variant="ghost"
-                bg="transparent"
-                color="gray.400"
-                fontWeight="medium"
-                _hover={{ bg: "rgba(255,255,255,0.1)", color: "white" }}
-                _active={{ bg: "rgba(255,255,255,0.15)" }}
-                borderRadius="md"
-                size="sm"
-                px={3}
-              >
-                Entwurf
-                <Box
-                  ml={1.5}
-                  bg="gray.700"
-                  color="gray.300"
-                  borderRadius="full"
-                  fontSize="xs"
-                  px={1.5}
-                  py={0.5}
-                  minW="20px"
-                  textAlign="center"
-                >
-                  3
-                </Box>
-              </Button>
-              <Button
-                variant="solid"
-                bg="#4ADE80"
-                color="black"
-                fontWeight="medium"
-                _hover={{ bg: "#22c55e" }}
-                _active={{ bg: "#16a34a" }}
-                borderRadius="full"
-                size="sm"
-                px={4}
-              >
-                Aktiv
-                <Box
-                  ml={1.5}
-                  bg="rgba(0,0,0,0.2)"
-                  color="black"
-                  borderRadius="full"
-                  fontSize="xs"
-                  px={1.5}
-                  py={0.5}
-                  minW="20px"
-                  textAlign="center"
-                >
-                  5
-                </Box>
-              </Button>
-            </Flex>
-            <Flex direction="column" w="full" h="full">
+            <Flex direction="column" w="full" h="full" flex="1" display="flex">
               <Heading size="md" mb={4} color="gray.900" _dark={{ color: "gray.900" }}>
                 Kategorie-Übersicht
               </Heading>
@@ -316,8 +245,14 @@ export default function CategoriesPage() {
                 border="1px solid"
                 borderColor="gray.200"
                 flex="1"
+                display="flex"
+                flexDirection="column"
+                minH="0"
+                h="full"
+                mb="0" // Kein Margin am unteren Rand
+                overflowY="auto" // Erlaubt vertikales Scrollen, wenn nötig
               >
-                <Box as="table" w="full" borderCollapse="collapse">
+                <Box as="table" w="full" borderCollapse="collapse" style={{ minWidth: '100%' }}>
                   <Box as="thead" bg="gray.50" _dark={{ bg: "gray.50" }}>
                     <Box as="tr">
                       <Box as="th" py={3} px={4} textAlign="left" fontWeight="semibold" color="gray.700" _dark={{ color: "gray.700" }} borderBottom="1px solid" borderColor="gray.200">
