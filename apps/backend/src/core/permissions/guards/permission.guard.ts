@@ -1,5 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, Logger, ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '../../../database';
+import { Injectable, CanActivate, ExecutionContext, Logger, ForbiddenException, Inject } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AccessControlService } from '../access-control.service';
 import { PERMISSIONS_KEY, RequiredPermission } from '../decorators/permissions.decorator';
@@ -12,7 +11,6 @@ export class PermissionGuard implements CanActivate {
     private reflector: Reflector,
     @Inject(AccessControlService) // Explizite Injektion
     private accessControlService: AccessControlService,
-    private databaseService: DatabaseService, // DatabaseService injizieren
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -34,9 +32,9 @@ export class PermissionGuard implements CanActivate {
     const guildId = params.guildId || params.id || request.query.guildId || request.query.scopeId ||
                    request.body?.guildId || request.body?.guild_id || request.body?.scope?.scopeId;
 
-    if (!user || !user.supabaseUserId) {
-      this.logger.warn('PermissionGuard: User object or supabaseUserId not found in request. Denying access.');
-      throw new ForbiddenException('Authentication required.');
+    if (!user || !user.id) {
+      this.logger.warn('PermissionGuard: User object or userProfileId (user.id) not found in request. Denying access.');
+      throw new ForbiddenException('Authentication required or user profile ID missing.');
     }
 
     if (!guildId) {
@@ -44,29 +42,9 @@ export class PermissionGuard implements CanActivate {
       throw new ForbiddenException('Guild context is required.');
     }
 
-    // --- KORREKTUR: user_profile_id holen ---
-    let userProfileId: string;
-    try {
-        const { data: userProfile, error: profileError } = await this.databaseService.adminClient
-          .from('user_profiles')
-          .select('id')
-          .eq('auth_id', user.supabaseUserId) // Suche über auth_id (FK zu Supabase Auth User)
-          .single(); // single() verwenden, da es nur einen geben sollte
-
-        if (profileError && profileError.code !== 'PGRST116') { // Fehler, aber nicht "nicht gefunden"
-          this.logger.error(`PermissionGuard: Error fetching user profile for supabaseUserId ${user.supabaseUserId}: ${profileError.message}`);
-          throw new ForbiddenException('Could not verify user profile.');
-        }
-        if (!userProfile) {
-            this.logger.error(`PermissionGuard: User profile not found for supabaseUserId ${user.supabaseUserId}. Denying access.`);
-            throw new ForbiddenException('User profile not found.');
-        }
-        userProfileId = userProfile.id;
-        this.logger.debug(`PermissionGuard: Found userProfileId ${userProfileId} for supabaseUserId ${user.supabaseUserId}`);
-    } catch (error) {
-        this.logger.error(`PermissionGuard: Unexpected error fetching user profile: ${error.message}`, error.stack);
-        throw new ForbiddenException('Error verifying user profile.');
-    }
+    // Hole userProfileId direkt aus dem User-Objekt
+    const userProfileId = user.id;
+    this.logger.debug(`PermissionGuard: Using userProfileId ${userProfileId} from request user object.`);
 
     this.logger.debug(`Checking permissions for user ${userProfileId} in guild ${guildId}. Required: ${JSON.stringify(requiredPermissions)}`);
 

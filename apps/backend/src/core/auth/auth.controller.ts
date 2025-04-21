@@ -30,129 +30,22 @@ export class AuthController {
     this.logger.log(`getSession: Request URL: ${req.url}`);
 
     try { // Wrap the entire logic in a try...catch block
-      // req.user should now contain { supabaseUserId: string } from the validated token
-      this.logger.log(`getSession: Request user object: ${JSON.stringify(req.user)}`);
+      // req.user now contains { id, supabaseUserId, discordId, username, avatarUrl, globalTrackingDisabled }
+      const reqUser = req.user; // Das Objekt aus der JwtStrategy.validate
+      this.logger.log(`getSession: Request user object from Guard/Strategy: ${JSON.stringify(reqUser)}`);
 
-      const supabaseUserId = req.user?.supabaseUserId; // Add safe navigation
-      if (!supabaseUserId) {
-         this.logger.error('getSession: supabaseUserId is missing in req.user after guard validation!');
-         this.logger.debug('getSession: req.user content:', req.user);
+      if (!reqUser || !reqUser.id) {
+         this.logger.error('getSession: User object or id is missing in req.user after guard validation!');
+         this.logger.debug('getSession: req.user content:', reqUser);
          throw new Error('Invalid user data from token validation.');
       }
-      this.logger.log(`getSession: Validated Supabase User ID: ${supabaseUserId}`);
-
-      // 1. Fetch user profile from our database using the Supabase User ID
-      this.logger.log(`getSession: Fetching user profile for supabaseUserId: ${supabaseUserId}`);
-
-      // Versuche zuerst, den Benutzer über auth_id zu finden (die korrekte Spalte in der Tabelle)
-      this.logger.log(`getSession: Suche Benutzerprofil mit auth_id = ${supabaseUserId}`);
-      let { data: userProfile, error: profileError } = await this.databaseService.adminClient
-        .from('user_profiles')
-        .select('*')
-        .eq('auth_id', supabaseUserId) // Match against the auth_id (FK to auth.users)
-        .single();
-
-      this.logger.log(`getSession: User profile query result: ${userProfile ? 'Found' : 'Not found'}`);
-      if (profileError) {
-        this.logger.log(`getSession: Profile error: ${JSON.stringify(profileError)}`);
-      }
-
-      // Wenn kein Benutzer gefunden wurde, erstellen wir einen neuen
-      if (profileError && profileError.code === 'PGRST116') { // PGRST116 = not found
-        this.logger.warn(`getSession: No user profile found with user_id ${supabaseUserId}, creating a new profile`);
-
-        // Hole Benutzerinformationen aus Supabase
-        this.logger.log(`getSession: Fetching user info from Supabase Auth for ID: ${supabaseUserId}`);
-        const { data: authUser, error: authError } = await this.databaseService.adminClient.auth.admin.getUserById(supabaseUserId);
-
-        if (authError) {
-          this.logger.error(`getSession: Error fetching user from Supabase Auth: ${authError.message}`, authError);
-          this.logger.error(`getSession: Full auth error: ${JSON.stringify(authError)}`);
-          throw new Error(`Error fetching user from Supabase Auth: ${authError.message}`);
-        }
-
-        this.logger.log(`getSession: Supabase Auth user data: ${JSON.stringify(authUser)}`);
-
-
-        if (!authUser || !authUser.user) {
-          this.logger.error(`getSession: No user found in Supabase Auth for ID ${supabaseUserId}`);
-          throw new Error(`No user found in Supabase Auth for ID ${supabaseUserId}`);
-        }
-
-        // Extrahiere Benutzerinformationen aus dem Supabase-Benutzer
-        const user = authUser.user;
-        const identities = user.identities || [];
-        this.logger.log(`getSession: User identities: ${JSON.stringify(identities)}`);
-
-        const discordIdentity = identities.find(i => i.provider === 'discord');
-
-        if (!discordIdentity) {
-          this.logger.error(`getSession: User ${supabaseUserId} has no Discord identity`);
-          throw new Error(`User ${supabaseUserId} has no Discord identity`);
-        }
-
-        this.logger.log(`getSession: Found Discord identity: ${JSON.stringify(discordIdentity)}`);
-
-
-        // Erstelle ein neues Benutzerprofil mit den Informationen aus Supabase
-        userProfile = {
-          id: crypto.randomUUID(),
-          auth_id: supabaseUserId, // Verwende auth_id statt user_id
-          username: discordIdentity.identity_data?.username || user.email || 'Discord User',
-          discord_id: discordIdentity.identity_data?.sub || '',
-          avatar_url: discordIdentity.identity_data?.avatar_url || null,
-          global_tracking_disabled: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-
-        this.logger.log(`getSession: Neues Benutzerprofil erstellt: ${JSON.stringify(userProfile)}`);
-
-        // Speichere den neuen Benutzer in der Datenbank
-        this.logger.log(`getSession: Saving new user profile: ${JSON.stringify(userProfile)}`);
-
-        try {
-          const { data: newProfile, error: insertError } = await this.databaseService.adminClient
-            .from('user_profiles')
-            .insert(userProfile)
-            .select()
-            .single();
-
-          if (insertError) {
-            this.logger.error(`getSession: Error creating new user profile: ${insertError.message}`, insertError);
-            this.logger.error(`getSession: Full insert error: ${JSON.stringify(insertError)}`);
-            throw new Error(`Database error creating user profile: ${insertError.message}`);
-          }
-
-          this.logger.log(`getSession: New profile created: ${JSON.stringify(newProfile)}`);
-          userProfile = newProfile;
-          this.logger.log(`getSession: Created new user profile for Supabase User ID ${supabaseUserId}`);
-          profileError = null;
-        } catch (dbError) {
-          this.logger.error(`getSession: Unexpected database error: ${dbError.message}`, dbError);
-          throw new Error(`Unexpected database error: ${dbError.message}`);
-        }
-      }
-
-      if (profileError) {
-        this.logger.error(`getSession: Supabase error fetching user profile for Supabase User ID ${supabaseUserId}: ${profileError.message}`, profileError);
-        throw new Error(`Database error fetching user profile: ${profileError.message}`);
-      }
-
-      if (!userProfile) {
-        this.logger.error(`getSession: Could not find user profile for Supabase User ID ${supabaseUserId}. This might indicate an issue with profile creation/sync.`);
-        throw new Error(`User profile not found for Supabase User ID ${supabaseUserId}`);
-      }
-
-      this.logger.log(`getSession: Found user profile: ${userProfile.username} (ID: ${userProfile.id})`);
-      const typedUserProfile = userProfile as UserProfileDto;
 
       // 2. Fetch available guilds for this user profile id
-      this.logger.log(`getSession: Fetching guilds for user profile with id: ${typedUserProfile.id}`);
+      this.logger.log(`getSession: Fetching guilds for user profile with id: ${reqUser.id}`);
 
       try {
         // Verwende user_id statt user_profile_id (basierend auf dem tatsächlichen Datenbankschema)
-        this.logger.log(`getSession: Suche guild_members mit user_id = ${typedUserProfile.id} und aktivem Bot-Status`);
+        this.logger.log(`getSession: Suche guild_members mit user_id = ${reqUser.id} und aktivem Bot-Status`);
         let { data: guildMembers, error: guildError } = await this.databaseService.adminClient
           .from('guild_members')
           .select(`
@@ -168,17 +61,17 @@ export class AuthController {
               owner_id
             )
           `)
-          .eq('user_id', typedUserProfile.id);
+          .eq('user_id', reqUser.id);
 
         this.logger.log(`getSession: Guild members query result: ${guildMembers ? `Found ${guildMembers.length} guilds` : 'No guilds found'}`);
         if (guildError) {
           this.logger.error(`getSession: Guild error: ${JSON.stringify(guildError)}`);
-          this.logger.error(`getSession: Supabase error fetching guilds for user ${typedUserProfile.id}: ${guildError.message}`, guildError);
+          this.logger.error(`getSession: Supabase error fetching guilds for user ${reqUser.id}: ${guildError.message}`, guildError);
           throw new Error(`Database error fetching guilds: ${guildError.message}`);
         }
 
         if (!guildMembers) {
-          this.logger.warn(`getSession: No guild memberships found for user ${typedUserProfile.id}. Returning empty list.`);
+          this.logger.warn(`getSession: No guild memberships found for user ${reqUser.id}. Returning empty list.`);
           guildMembers = [];
         }
 
@@ -189,7 +82,7 @@ export class AuthController {
         const availableGuildsPromises = guildMembers.map(async (member) => {
           const guild = member.guilds as any;
           if (!guild || !guild.id) {
-            this.logger.warn(`getSession: Found guild_member entry with null or invalid guild data for user ${typedUserProfile.id}, member guild_id: ${member.guild_id}`);
+            this.logger.warn(`getSession: Found guild_member entry with null or invalid guild data for user ${reqUser.id}, member guild_id: ${member.guild_id}`);
             return null;
           }
 
@@ -201,7 +94,7 @@ export class AuthController {
 
           // Ermittle effektive Berechtigungen für diese Guild
           const effectivePermissions = await this.accessControlService.calculateEffectivePermissions(
-            typedUserProfile.id, // user_profile_id
+            reqUser.id, // user_profile_id
             guild.id // guild_id (DB UUID)
           );
           this.logger.debug(`Permissions for guild ${guild.name}: ${JSON.stringify(effectivePermissions)}`);
@@ -209,7 +102,7 @@ export class AuthController {
           // Ermittle Admin-Status mit der GuildsService-Methode
           const isAdmin = this.guildsService.isUserAdminCheck(
             member.discord_roles || [],
-            guild.owner_id === typedUserProfile.id
+            guild.owner_id === reqUser.id
           );
 
           return {
@@ -237,21 +130,21 @@ export class AuthController {
             permissions: g.permissions || [], // Stelle sicher, dass permissions immer ein Array ist
           }));
 
-        this.logger.log(`getSession: Found ${availableGuilds.length} available guilds for user ${typedUserProfile.username}`);
+        this.logger.log(`getSession: Found ${availableGuilds.length} available guilds for user ${reqUser.username}`);
 
         // 4. Construct and return the SessionDto
         const sessionResult: SessionDto = {
           user: {
-            id: typedUserProfile.id,
-            username: typedUserProfile.username,
-            avatar_url: typedUserProfile.avatar_url,
-            discord_id: typedUserProfile.discord_id,
-            global_tracking_disabled: typedUserProfile.global_tracking_disabled,
+            id: reqUser.id,
+            username: reqUser.username,
+            avatar_url: reqUser.avatarUrl,
+            discord_id: reqUser.discordId,
+            global_tracking_disabled: reqUser.globalTrackingDisabled,
           },
           availableGuilds,
           token: null,
         };
-        this.logger.log(`getSession: Successfully constructed session DTO for user ${typedUserProfile.username}.`);
+        this.logger.log(`getSession: Successfully constructed session DTO for user ${reqUser.username}.`);
         this.logger.log('=== GET SESSION END ===');
         return sessionResult;
       } catch (guildError) {

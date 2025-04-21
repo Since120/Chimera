@@ -470,6 +470,9 @@ importers:
 
   apps/frontend-new:
     dependencies:
+      '@chakra-ui/icons':
+        specifier: ^2.2.4
+        version: 2.2.4(@chakra-ui/react@3.16.0(@emotion/react@11.14.0(@types/react@19.0.4)(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       '@chakra-ui/react':
         specifier: ^3.16.0
         version: 3.16.0(@emotion/react@11.14.0(@types/react@19.0.4)(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -757,6 +760,12 @@ packages:
     hasBin: true
     peerDependencies:
       '@chakra-ui/react': '>=3.0.0-next.0'
+
+  '@chakra-ui/icons@2.2.4':
+    resolution: {integrity: sha512-l5QdBgwrAg3Sc2BRqtNkJpfuLw/pWRDwwT58J6c4PqQT6wzXxyNa8Q0PForu1ltB5qEiFb1kxr/F/HO1EwNa6g==}
+    peerDependencies:
+      '@chakra-ui/react': '>=2.0.0'
+      react: '>=18'
 
   '@chakra-ui/react@3.16.0':
     resolution: {integrity: sha512-NZLGQgIPr/hLeyBoQyUqzaru+RGrs4Zy1kGpnBNGnL2UrCLZryHvax/pdfqId8cJjhWPGxokJUTVcTTMPnN3Gg==}
@@ -8047,6 +8056,11 @@ snapshots:
       zod: 3.24.1
     transitivePeerDependencies:
       - supports-color
+
+  '@chakra-ui/icons@2.2.4(@chakra-ui/react@3.16.0(@emotion/react@11.14.0(@types/react@19.0.4)(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@chakra-ui/react': 3.16.0(@emotion/react@11.14.0(@types/react@19.0.4)(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
 
   '@chakra-ui/react@3.16.0(@emotion/react@11.14.0(@types/react@19.0.4)(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:

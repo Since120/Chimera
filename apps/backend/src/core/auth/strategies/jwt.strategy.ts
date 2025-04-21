@@ -1,8 +1,10 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
+import { DatabaseService } from '../../../database/database.service'; // DatabaseService importieren
+import { UserProfileDto } from 'shared-types'; // UserProfileDto importieren
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt-supabase') {
@@ -10,6 +12,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt-supabase') {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly databaseService: DatabaseService, // DatabaseService injizieren
   ) {
     // Create a local logger since we can't use this.logger before super()
     const logger = new Logger(JwtStrategy.name);
@@ -98,6 +101,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt-supabase') {
         this.logger.error('Supabase JWT payload is missing required claim: sub (Supabase User ID).');
         throw new UnauthorizedException('Invalid token claims: Missing Supabase User ID.');
       }
+      const supabaseUserId = payload.sub;
 
       // Check other required claims
       if (!payload.aud) {
@@ -110,21 +114,42 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt-supabase') {
         throw new UnauthorizedException(`Invalid token: Missing 'iss' claim`);
       }
 
-      // Construct the validated user object
-      const validatedUser = {
-        supabaseUserId: payload.sub,
-        email: payload.email,
-        role: payload.role || 'authenticated',
-        aud: payload.aud,
-        iss: payload.iss
+      // --- User-Profil aus DB laden ---
+      this.logger.debug(`Fetching user profile for validated supabaseUserId: ${supabaseUserId}`);
+      const { data: userProfile, error: profileError } = await this.databaseService.adminClient
+        .from('user_profiles')
+        .select('id, discord_id, username, avatar_url, global_tracking_disabled') // Benötigte Felder auswählen
+        .eq('auth_id', supabaseUserId)
+        .single(); // Es sollte nur einen geben
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        this.logger.error(`Error fetching user profile during JWT validation: ${profileError.message}`);
+        throw new UnauthorizedException('Could not retrieve user profile.');
+      }
+
+      if (!userProfile) {
+        this.logger.error(`User profile not found for validated supabaseUserId ${supabaseUserId}. This indicates a sync issue.`);
+        throw new NotFoundException(`User profile for authenticated user not found.`);
+      }
+      this.logger.debug(`User profile found: ${userProfile.username} (ID: ${userProfile.id})`);
+
+      // Konstruiere das neue User-Objekt für req.user
+      const reqUserObject = {
+          id: userProfile.id, // Das ist die user_profile_id (UUID)
+          supabaseUserId: supabaseUserId, // Behalten wir zur Referenz
+          discordId: userProfile.discord_id,
+          username: userProfile.username,
+          // Füge weitere Felder hinzu, die oft benötigt werden könnten
+          avatarUrl: userProfile.avatar_url,
+          globalTrackingDisabled: userProfile.global_tracking_disabled
       };
 
-      this.logger.log(`JWT validation successful for user ID: ${payload.sub}`);
-      this.logger.log(`Returning validated user: ${JSON.stringify(validatedUser)}`);
+      this.logger.log(`JWT validation successful for user ID: ${supabaseUserId}`);
+      this.logger.log(`Returning user object for request: ${JSON.stringify(reqUserObject)}`);
       this.logger.log('=== JWT VALIDATION END (HS256) ===');
 
       // The controller using this strategy will receive this returned object as `req.user`
-      return validatedUser;
+      return reqUserObject; // Das neue Objekt zurückgeben
     } catch (error) {
       this.logger.error(`JWT validation failed: ${error.message}`);
       if (error.stack) {

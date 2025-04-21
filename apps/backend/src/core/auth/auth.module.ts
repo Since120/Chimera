@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core'; // APP_GUARD importieren
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -31,7 +32,16 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard'; // Guard importieren
     GuildsModule, // Normaler Import
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard], // Guard hier hinzufügen
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard, // Muss weiterhin als Provider deklariert sein
+    // Registriert JwtAuthGuard als globalen Guard über DI
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
   exports: [AuthService, JwtStrategy, PassportModule], // Guard NICHT exportieren
 })
 export class AuthModule {}

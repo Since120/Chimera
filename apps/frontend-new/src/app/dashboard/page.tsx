@@ -1,5 +1,6 @@
 // apps/frontend-new/src/app/dashboard/page.tsx
 import { Box, Heading, Text } from "@chakra-ui/react";
+import { NotchedBox } from "@/components/core/NotchedBox"; // Importiere die NotchedBox
 
 export default function DashboardPage() {
   return (
@@ -8,22 +9,19 @@ export default function DashboardPage() {
       <Heading as="h1" size="lg" mb={6}>
         Dashboard Overview
       </Heading>
-      {/* Platzhalter-Box */}
-      <Box
-        borderWidth="2px"
-        borderStyle="dashed"
-        borderColor="border.subtle"
-        borderRadius="xl" // Stark abgerundet (>=12px)
-        p={8} // Großzügiges Padding
-        minHeight="50vh" // Deutliche Mindesthöhe
+      {/* NotchedBox statt Platzhalter-Box */}
+      <NotchedBox
+        minHeight="50vh" // Behalte nötige Layout-Props bei
         display="flex"
         alignItems="center"
         justifyContent="center"
+        // Das p={8} vom alten Box wird durch das Standard-p={6} von NotchedBox ersetzt,
+        // kann aber bei Bedarf hier überschrieben werden: p={8}
       >
         <Text color="fg.muted" fontSize="lg">
-          Inhaltsbereich für das Dashboard...
+          Inhaltsbereich für das Dashboard... (Jetzt in NotchedBox)
         </Text>
-      </Box>
+      </NotchedBox>
     </Box>
   );
 }

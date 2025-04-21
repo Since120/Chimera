@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
+import { mainGradientBackground } from '@/styles/backgrounds'; // Import der zentralen Hintergrund-Definition
 import {
   Box,
   Flex,
@@ -135,15 +136,7 @@ export default function LoginPage() {
     login();
   };
 
-  // Dashboard-Hintergrundgradient
-  const bgStyle = {
-    backgroundColor: "#111822",
-    backgroundImage: `
-      radial-gradient(ellipse 40% 30% at 50% 0%, rgba(27, 37, 52, 0.5) 0%, transparent 80%),
-      radial-gradient(ellipse 30% 25% at 15% 15%, rgba(39, 55, 77, 0.4) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 35% at 80% 90%, rgba(27, 37, 52, 0.3) 0%, transparent 75%)
-    `
-  };
+  // Verwendung der zentralen Hintergrund-Definition
 
   // Animationen aus dem Theme verwenden
   const [blinkAnimation, pulseSlowAnimation, typingAnimation, sweepAnimation, pingAnimation, scanAnimation, buttonSpotlightAnimation] =
@@ -158,7 +151,7 @@ export default function LoginPage() {
       fontFamily="body"
       position="relative"
       overflow="hidden"
-      style={bgStyle}
+      style={mainGradientBackground} // Verwendung der zentralen Hintergrund-Definition
     >
 
 

@@ -5,6 +5,7 @@ export const configValidationSchema = Joi.object({
   SUPABASE_URL: Joi.string().required(),
   SUPABASE_KEY: Joi.string().required(), // anon key for client operations
   SUPABASE_SERVICE_ROLE_KEY: Joi.string().required(), // service role key for admin operations
+  SUPABASE_JWT_SECRET: Joi.string().required(), // NEU: Für HS256 Token Validierung
 
   // Discord (Client ID/Secret/Callback URL no longer required here, handled by Supabase Auth)
   DISCORD_CLIENT_ID: Joi.string(), // Removed .required()
@@ -12,8 +13,7 @@ export const configValidationSchema = Joi.object({
   DISCORD_BOT_TOKEN: Joi.string().required(), // Bot token is still needed
   DISCORD_CALLBACK_URL: Joi.string(), // Removed .required()
 
-  // JWT
-  JWT_SECRET: Joi.string().required(),
+  // JWT Expiration für Supabase Tokens
   JWT_EXPIRATION: Joi.string().default('1d'),
 
   // Server

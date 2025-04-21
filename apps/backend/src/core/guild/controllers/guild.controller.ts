@@ -3,7 +3,7 @@ import { GuildService } from '../services/guild.service';
 // JwtAuthGuard wird global registriert
 import { BotGatewayService } from '../../bot-gateway/bot-gateway.service';
 
-@Controller('guilds')
+@Controller('guild-details') // Präfix geändert
 export class GuildController {
   private readonly logger = new Logger(GuildController.name);
 
