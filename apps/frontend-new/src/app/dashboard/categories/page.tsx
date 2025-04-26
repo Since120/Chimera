@@ -1,14 +1,84 @@
 // apps/frontend-new/src/app/dashboard/categories/page.tsx
 'use client';
 
-import { Box, Flex, Heading, Text, Button, Input, SimpleGrid } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text } from "@chakra-ui/react";
+import './page.css';
+import { DataTable } from "@/components/core/DataTable";
+
 import { NotchedBox } from "@/components/core/NotchedBox";
 import { FilterBar } from "@/components/core/FilterBar";
 import { ContentBox } from "@/components/core/ContentBox";
 
-// HINWEIS: KEIN useState, KEIN Framer Motion hier!
+// Icons für die Buttons
+import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
+import { FiEye, FiStar, FiCheckCircle } from "react-icons/fi";
+
+// Komponenten für Kategorien und Zonen
+import { KategorieTabelle, Kategorie } from "@/components/categories/KategorieTabelle";
+import { ZonenTabelle, Zone } from "@/components/zones/ZonenTabelle";
+
+// Daten
+import { kategorien, zonenProKategorie } from "@/data/categoriesData";
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+
 
 export default function CategoriesPage() {
+  // States für den Vollbildmodus der verschiedenen Komponenten
+  const [isContentBox1Fullscreen, setIsContentBox1Fullscreen] = useState(false);
+  const [isContentBox2Fullscreen, setIsContentBox2Fullscreen] = useState(false);
+  const [isNotchedBoxFullscreen, setIsNotchedBoxFullscreen] = useState(false);
+
+  // State für die ausgewählte Kategorie
+  const [selectedKategorie, setSelectedKategorie] = useState<Kategorie | null>(null);
+
+  // Funktion zum Auswählen einer Kategorie
+  const handleSelectKategorie = (kategorie: Kategorie | null) => {
+    setSelectedKategorie(kategorie);
+  };
+
+  // Funktion zum Zurücksetzen der Auswahl, wenn außerhalb geklickt wird
+  const handleOutsideClick = (e: React.MouseEvent) => {
+    // Prüfen, ob das Klick-Event von einem Element stammt, das nicht zur Kategorie- oder Zonen-Tabelle gehört
+    const target = e.target as HTMLElement;
+    if (!target.closest('.kategorie-tabelle') && !target.closest('.zonen-tabelle')) {
+      setSelectedKategorie(null);
+    }
+  };
+
+  // Funktionen zum Umschalten des Vollbildmodus
+  const toggleContentBox1Fullscreen = () => {
+    setIsContentBox1Fullscreen(!isContentBox1Fullscreen);
+    // Stelle sicher, dass die anderen Komponenten nicht im Vollbildmodus sind
+    if (!isContentBox1Fullscreen) {
+      setIsContentBox2Fullscreen(false);
+      setIsNotchedBoxFullscreen(false);
+    }
+  };
+
+  const toggleContentBox2Fullscreen = () => {
+    setIsContentBox2Fullscreen(!isContentBox2Fullscreen);
+    // Stelle sicher, dass die anderen Komponenten nicht im Vollbildmodus sind
+    if (!isContentBox2Fullscreen) {
+      setIsContentBox1Fullscreen(false);
+      setIsNotchedBoxFullscreen(false);
+    }
+  };
+
+  const toggleNotchedBoxFullscreen = () => {
+    const newIsFullscreen = !isNotchedBoxFullscreen;
+    console.log('Categories toggleNotchedBoxFullscreen:', { newIsFullscreen });
+    setIsNotchedBoxFullscreen(newIsFullscreen);
+    // Stelle sicher, dass die anderen Komponenten nicht im Vollbildmodus sind
+    if (newIsFullscreen) {
+      setIsContentBox1Fullscreen(false);
+      setIsContentBox2Fullscreen(false);
+    }
+  };
+
+
 
   // ---- Filter Bar Inhalt (wie zuvor, als Variable für Lesbarkeit) ----
   const filterBar = (
@@ -60,309 +130,366 @@ export default function CategoriesPage() {
   // ----------------------------------------------
 
   return (
-    <Flex direction="column" h="full" gap={4}>
-      {/* 1. Seitenüberschrift */}
-      <Heading as="h1" size="lg" mb={2}>
-        Categories & Zones
-      </Heading>
-
-      {/* Flex-Container für die Aufteilung des verbleibenden Platzes */}
-      <Flex direction="column" flex="1" gap={0}> {/* Kein Gap hier, da die Filterleiste eigene Margins hat */}
-        {/* Oberer Bereich: 3/8 der Höhe */}
-        <Flex direction="column" flex="3">
-          {/* 2. (Optional) Top-Card-Reihe (Platzhalter) */}
-          {/*    Wie die Salesforce-Statistiken oben. Dunklerer Hintergrund. */}
-          <Flex gap={4} h="full">
-            {/* Statistikbox 1 - 3/5 der Breite */}
-            <ContentBox
-              size="xl" // 5/7 der Breite
-              display="flex"
-              flexDirection="column"
-              justifyContent="center"
-              backdropFilter="blur(5px)"
-            >
-              <Flex direction="column" gap={3} w="full">
-                <Heading size="sm" color="white" mb={1}>Kategorie-Übersicht</Heading>
-                <Flex justify="space-between" align="center">
-                  <Box>
-                    <Text color="gray.400" fontSize="xs">Gesamt</Text>
-                    <Text color="white" fontSize="2xl" fontWeight="bold">24</Text>
-                  </Box>
-                  <Box>
-                    <Text color="gray.400" fontSize="xs">Aktiv</Text>
-                    <Text color="green.400" fontSize="2xl" fontWeight="bold">18</Text>
-                  </Box>
-                  <Box>
-                    <Text color="gray.400" fontSize="xs">Inaktiv</Text>
-                    <Text color="red.400" fontSize="2xl" fontWeight="bold">6</Text>
-                  </Box>
-                </Flex>
-
-                {/* Einfaches Balkendiagramm */}
-                <Box mt={2}>
-                  <Flex h="8px" w="full" bg="gray.700" borderRadius="full" overflow="hidden">
-                    <Box w="75%" bg="green.400" borderLeftRadius="full" />
-                    <Box w="25%" bg="red.400" borderRightRadius="full" />
-                  </Flex>
-                  <Flex justify="space-between" mt={1}>
-                    <Text color="green.400" fontSize="xs">75% Aktiv</Text>
-                    <Text color="red.400" fontSize="xs">25% Inaktiv</Text>
-                  </Flex>
-                </Box>
-              </Flex>
-            </ContentBox>
-
-            {/* Statistikbox 2 - 2/5 der Breite */}
-            <ContentBox
-              size="md" // 3/7 der Breite
-              display="flex"
-              flexDirection="column"
-              justifyContent="center"
-              backdropFilter="blur(5px)"
-            >
-              <Flex direction="column" gap={3} w="full">
-                <Heading size="sm" color="white" mb={1}>Zonen-Aktivität</Heading>
-
-                {/* Kreisdiagramm (vereinfacht) */}
-                <Flex justify="center" align="center" position="relative" h="80px">
-                  <Box
-                    position="absolute"
-                    w="80px"
-                    h="80px"
-                    borderRadius="full"
-                    bg="transparent"
-                    border="8px solid"
-                    borderColor="blue.400"
-                    borderRightColor="transparent"
-                    transform="rotate(-45deg)"
-                  />
-                  <Box
-                    position="absolute"
-                    w="80px"
-                    h="80px"
-                    borderRadius="full"
-                    bg="transparent"
-                    border="8px solid"
-                    borderColor="purple.400"
-                    borderTopColor="transparent"
-                    borderLeftColor="transparent"
-                    transform="rotate(45deg)"
-                  />
-                  <Text color="white" fontSize="xl" fontWeight="bold" zIndex={1}>42</Text>
-                </Flex>
-
-                {/* Legende */}
-                <Flex justify="space-around" mt={1}>
-                  <Flex align="center" gap={1}>
-                    <Box w="10px" h="10px" bg="blue.400" borderRadius="sm" />
-                    <Text color="gray.300" fontSize="xs">Trading (65%)</Text>
-                  </Flex>
-                  <Flex align="center" gap={1}>
-                    <Box w="10px" h="10px" bg="purple.400" borderRadius="sm" />
-                    <Text color="gray.300" fontSize="xs">Farming (35%)</Text>
-                  </Flex>
-                </Flex>
-              </Flex>
-            </ContentBox>
-          </Flex>
-        </Flex>
-
-        {/* 3. Filterleiste */}
-        {filterBar}
-
-        {/* Unterer Bereich: 5/8 der Höhe */}
-        <Flex flex="5">
-          {/* 4. Haupt-Content-Kachel (Kategorie-Liste) mit NotchedBox */}
-          <NotchedBox
-            w="full"
-            h="full"
-            p={6}
-            overflowY="auto"
-            position="relative"
-            buttons={[
-              { label: 'Alle Kategorien', isActive: true },
-              { label: 'Entwurf', isActive: false },
-              { label: 'Aktiv', isActive: false },
-            ]}
-            buttonSpacing={2}
-            activeButtonBg="#90FF00" // Grün aus der TopBar-SubNavigation (nav.activeGreen)
-            inactiveButtonBg="#1E2536" // Grau aus dem Icon-Kreis der FilterBox
-            activeButtonColor="black"
-            inactiveButtonColor="white"
+    <Flex
+      direction="column"
+      h={{ base: "auto", lg: "100%" }} // Auf Desktop: Füllt den verfügbaren Platz, auf Tablets: Automatische Höhe
+      minH={{ base: "100%", lg: "0" }} // Auf Tablets: Mindesthöhe 100%, auf Desktop: Wichtig für Flex-Kinder
+      gap={4}
+      overflow={{ base: "visible", lg: "hidden" }} // Auf Tablets: Erlaubt Scrolling, auf Desktop: Verhindert Scrolling
+      onClick={handleOutsideClick} // Klick-Handler zum Zurücksetzen der Auswahl
+    >
+      {/* 1. Seitenüberschrift - animiert im Vollbildmodus */}
+      <AnimatePresence>
+        {(
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            <Flex direction="column" w="full" h="full" flex="1" display="flex">
-              <Heading size="md" mb={4} color="gray.900" _dark={{ color: "gray.900" }}>
-                Kategorie-Übersicht
-              </Heading>
+            <Heading as="h1" size="lg" mb={2}>
+              Categories & Zones
+            </Heading>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-              {/* Suchleiste und Filter */}
-              <Flex mb={4} gap={4} justify="space-between">
-                <Box flex="1" maxW="400px">
-                  <Flex
-                    bg="gray.100"
-                    _dark={{ bg: "gray.100" }}
-                    borderRadius="lg"
-                    px={3}
-                    py={2}
-                    align="center"
-                    border="1px solid"
-                    borderColor="gray.300"
-                  >
-                    <Box color="gray.500" mr={2}>
-                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                      </svg>
-                    </Box>
-                    <Input
-                      type="text"
-                      placeholder="Kategorie suchen..."
-                      border="none"
-                      bg="transparent"
-                      color="gray.800"
-                      _dark={{ color: "gray.800" }}
-                      _placeholder={{ color: "gray.500" }}
-                      flex="1"
-                      _focus={{ outline: "none", boxShadow: "none" }}
-                    />
-                  </Flex>
-                </Box>
-                <Button
-                  bg="blue.500"
-                  color="white"
-                  _hover={{ bg: "blue.600" }}
-                  borderRadius="lg"
-                  px={4}
-                >
-                  + Neue Kategorie
-                </Button>
-              </Flex>
+      {/* Container für die gesamte Ansicht */}
+      <Box
+        position="relative"
+        h={{ base: "auto", lg: "calc(100% - 40px)" }} // Auf Desktop: Feste Höhe, auf Tablets: Automatische Höhe
+        overflow={{ base: "visible", lg: "hidden" }} // Auf Tablets: Erlaubt Scrolling, auf Desktop: Verhindert Scrolling
+        id="dashboard-container"
+        className={`fullscreen-transition ${isNotchedBoxFullscreen ? 'fullscreen-active' : ''}`}
+      >
+        {/* Flex-Container für die gesamte Ansicht */}
+        <Flex
+          direction="column"
+          h={{ base: "auto", lg: "100%" }} // Auf Desktop: 100% Höhe, auf Tablets: Automatische Höhe
+          position="relative"
 
-              {/* Tabelle */}
-              <Box
-                w="full"
-                overflowX="auto"
-                borderRadius="lg"
-                border="1px solid"
-                borderColor="gray.200"
-                flex="1"
+        >
+          {/* Oberer Bereich mit ContentBoxes */}
+          <Box
+            flex={{ base: "none", lg: "1" }} // Auf Desktop: Flex 1, auf Tablets: Keine Flex-Anpassung
+            h={{ base: "auto", lg: "auto" }} // Auf Tablets: Automatische Höhe, auf Desktop: Automatische Höhe
+            mb={4}
+            className="content-box-container fullscreen-transition"
+          >
+            <Flex
+              direction={{ base: "column", lg: "row" }} // Auf Tablets: Vertikal, auf Desktop: Horizontal
+              gap={4}
+              h={{ base: "auto", lg: "100%" }} // Auf Tablets: Automatische Höhe, auf Desktop: 100% Höhe
+              position="relative"
+            >
+              {/* Statistikbox 1 - 3/5 der Breite */}
+              <ContentBox
+                size="xl" // 5/7 der Breite
                 display="flex"
                 flexDirection="column"
-                minH="0"
-                h="full"
-                mb="0" // Kein Margin am unteren Rand
-                overflowY="auto" // Erlaubt vertikales Scrollen, wenn nötig
+                justifyContent="center"
+                backdropFilter="blur(5px)"
+                canFullscreen={true}
+                isFullscreen={isContentBox1Fullscreen}
+                onFullscreenChange={toggleContentBox1Fullscreen}
+                title="Kategorie-Übersicht"
+                h={{ base: "200px", lg: "auto" }} // Auf Tablets: Feste Höhe, auf Desktop: Automatische Höhe
               >
-                <Box as="table" w="full" borderCollapse="collapse" style={{ minWidth: '100%' }}>
-                  <Box as="thead" bg="gray.50" _dark={{ bg: "gray.50" }}>
-                    <Box as="tr">
-                      <Box as="th" py={3} px={4} textAlign="left" fontWeight="semibold" color="gray.700" _dark={{ color: "gray.700" }} borderBottom="1px solid" borderColor="gray.200">
-                        Name
-                      </Box>
-                      <Box as="th" py={3} px={4} textAlign="left" fontWeight="semibold" color="gray.700" _dark={{ color: "gray.700" }} borderBottom="1px solid" borderColor="gray.200">
-                        Typ
-                      </Box>
-                      <Box as="th" py={3} px={4} textAlign="left" fontWeight="semibold" color="gray.700" _dark={{ color: "gray.700" }} borderBottom="1px solid" borderColor="gray.200">
+                <Flex direction="column" gap={3} w="full">
+                  <Flex justify="space-between" align="center">
+                    <Box>
+                      <Text color="gray.400" fontSize="xs">Gesamt</Text>
+                      <Text color="white" fontSize="2xl" fontWeight="bold">24</Text>
+                    </Box>
+                    <Box>
+                      <Text color="gray.400" fontSize="xs">Aktiv</Text>
+                      <Text color="green.400" fontSize="2xl" fontWeight="bold">18</Text>
+                    </Box>
+                    <Box>
+                      <Text color="gray.400" fontSize="xs">Inaktiv</Text>
+                      <Text color="red.400" fontSize="2xl" fontWeight="bold">6</Text>
+                    </Box>
+                  </Flex>
+
+                  {/* Einfaches Balkendiagramm */}
+                  <Box mt={2}>
+                    <Flex h="8px" w="full" bg="gray.700" borderRadius="full" overflow="hidden">
+                      <Box w="75%" bg="green.400" borderLeftRadius="full" />
+                      <Box w="25%" bg="red.400" borderRightRadius="full" />
+                    </Flex>
+                    <Flex justify="space-between" mt={1}>
+                      <Text color="green.400" fontSize="xs">75% Aktiv</Text>
+                      <Text color="red.400" fontSize="xs">25% Inaktiv</Text>
+                    </Flex>
+                  </Box>
+                </Flex>
+              </ContentBox>
+
+              {/* Statistikbox 2 - 2/5 der Breite */}
+              <ContentBox
+                size="md" // 3/7 der Breite
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                backdropFilter="blur(5px)"
+                canFullscreen={true}
+                isFullscreen={isContentBox2Fullscreen}
+                onFullscreenChange={toggleContentBox2Fullscreen}
+                title="Zonen-Aktivität"
+                h={{ base: "200px", lg: "auto" }} // Auf Tablets: Feste Höhe, auf Desktop: Automatische Höhe
+                mb={{ base: 4, lg: 0 }} // Auf Tablets: Abstand nach unten, auf Desktop: Kein Abstand
+              >
+                <Flex direction="column" gap={3} w="full">
+
+                  {/* Kreisdiagramm (vereinfacht) */}
+                  <Flex justify="center" align="center" position="relative" h="80px">
+                    <Box
+                      position="absolute"
+                      w="80px"
+                      h="80px"
+                      borderRadius="full"
+                      bg="transparent"
+                      border="8px solid"
+                      borderColor="blue.400"
+                      borderRightColor="transparent"
+                      transform="rotate(-45deg)"
+                    />
+                    <Box
+                      position="absolute"
+                      w="80px"
+                      h="80px"
+                      borderRadius="full"
+                      bg="transparent"
+                      border="8px solid"
+                      borderColor="purple.400"
+                      borderTopColor="transparent"
+                      borderLeftColor="transparent"
+                      transform="rotate(45deg)"
+                    />
+                    <Text color="white" fontSize="xl" fontWeight="bold" zIndex={1}>42</Text>
+                  </Flex>
+
+                  {/* Legende */}
+                  <Flex justify="space-around" mt={1}>
+                    <Flex align="center" gap={1}>
+                      <Box w="10px" h="10px" bg="blue.400" borderRadius="sm" />
+                      <Text color="gray.300" fontSize="xs">Trading (65%)</Text>
+                    </Flex>
+                    <Flex align="center" gap={1}>
+                      <Box w="10px" h="10px" bg="purple.400" borderRadius="sm" />
+                      <Text color="gray.300" fontSize="xs">Farming (35%)</Text>
+                    </Flex>
+                  </Flex>
+                </Flex>
+              </ContentBox>
+            </Flex>
+          </Box>
+
+          {/* Filterleiste */}
+          <Box h="60px" mb={4} className="filter-bar-container fullscreen-transition">
+            {filterBar}
+          </Box>
+
+          {/* NotchedBox-Container */}
+          <Box
+            flex={{ base: "none", lg: "1.5" }} // Auf Desktop: Flex 1.5, auf Tablets: Keine Flex-Anpassung
+            minH={{ base: "500px", lg: "0" }} // Auf Tablets: Mindesthöhe, auf Desktop: Mindesthöhe 0 für Flex
+            h={{ base: "auto", lg: "100%" }} // Auf Desktop: 100% Höhe, auf Tablets: Automatische Höhe
+            position="relative" // Wichtig für die korrekte Positionierung der Kinder
+            overflow={{ base: "visible", lg: "hidden" }} // Auf Desktop: Kein Overflow, auf Tablets: Overflow erlaubt
+            className="notched-box-container fullscreen-transition"
+          >
+            <NotchedBox
+              w="full"
+              h="full"
+              p={6}
+              position="relative"
+              display="flex"
+              flexDirection="column"
+              overflow={{ base: "visible", lg: "visible" }} // Erlaubt Überlauf für den Border, aber kontrolliert den Inhalt
+              maxH={{ base: "none", lg: "100%" }} // Auf Desktop: Maximale Höhe 100%, auf Tablets: Keine Begrenzung
+              buttons={[
+                {
+                  label: 'Alle Kategorien',
+                  isActive: true,
+                  icon: <FiEye size={14} />,
+                  iconPosition: 'left'
+                },
+                {
+                  label: 'Entwurf',
+                  isActive: false,
+                  icon: <FiStar size={14} />,
+                  iconPosition: 'left'
+                },
+                {
+                  label: 'Aktiv',
+                  isActive: false,
+                  icon: <FiCheckCircle size={14} />,
+                  iconPosition: 'left'
+                },
+              ]}
+              buttonSpacing={2}
+              activeButtonBg="#90FF00" // Grün aus der TopBar-SubNavigation (nav.activeGreen)
+              inactiveButtonBg="#1E2536" // Grau aus dem Icon-Kreis der FilterBox
+              activeButtonColor="black"
+              inactiveButtonColor="white"
+              // Hover-Farben
+              activeButtonHoverBg="#7FE000" // Etwas dunkleres Grün für Hover
+              inactiveButtonHoverBg="#2A3349" // Etwas helleres Grau für Hover
+              activeButtonHoverColor="black"
+              inactiveButtonHoverColor="white"
+              // Neue Props
+              title="Kategorien"
+              titleSize="lg"
+              titleColor="gray.700"
+              rightButtons={[
+                {
+                  label: 'Neu Kategorie erstellen',
+                  onClick: () => console.log('Neue Kategorie erstellen'),
+                  icon: <FiPlus size={14} />,
+                  iconPosition: 'left'
+                }
+              ]}
+              // Vollbildmodus-Props
+              canFullscreen={true}
+              isFullscreen={isNotchedBoxFullscreen}
+              onFullscreenChange={toggleNotchedBoxFullscreen}
+            >
+              <Flex
+                direction={{ base: "column", lg: "row" }} // Auf Tablets: Vertikal, auf Desktop: Horizontal
+                w="full"
+                h="full"
+                flex="1"
+                display="flex"
+                overflow={{ base: "visible", lg: "hidden" }} // Auf Desktop: Kein Overflow, auf Tablets: Overflow erlaubt
+                gap={4} // Abstand zwischen den Elementen
+              >
+                {/* Linke Seite: Kategorie-Tabelle (volle Breite oder 3/7 der Breite, je nach Auswahl) */}
+                <Box
+                  w={{ base: "100%", lg: selectedKategorie && zonenProKategorie[selectedKategorie.id] ? "42.8%" : "100%" }} // 3/7 der Breite auf Desktop wenn ausgewählt, sonst volle Breite
+                  borderRadius="lg"
+                  flex={{ base: "1", lg: "0 0 auto" }}
+                  display="flex"
+                  flexDirection="column"
+                  minH={{ base: "0", lg: "0" }} // Wichtig für Flex-Kinder
+                  h={{ base: "auto", lg: "full" }} // Auf Desktop: Volle Höhe, auf Tablets: Automatische Höhe
+                  mb={{ base: "4", lg: "0" }} // Auf Tablets: Abstand nach unten, auf Desktop: Kein Abstand
+                  pt="20px"
+                  pb="10px"
+                  overflow="auto" // Immer Scrolling erlauben
+                  maxH={{ base: "none", lg: "calc(100% - 5px - 5px)" }} // Auf Desktop: Maximale Höhe, auf Tablets: Keine Begrenzung
+                  className="custom-scrollbar kategorie-tabelle" // Klasse für Klick-Handler
+                  transition="width 0.3s ease-in-out" // Animation für die Breitenänderung
+                >
+                  <KategorieTabelle
+                    data={kategorien}
+                    selectedKategorieId={selectedKategorie?.id || null}
+                    onSelectKategorie={handleSelectKategorie}
+                    compactMode={selectedKategorie && zonenProKategorie[selectedKategorie.id] ? true : false}
+                  />
+                </Box>
+
+                {/* Rechte Seite: Zonen-Tabelle (4/7 der Breite) - immer anzeigen, aber mit unterschiedlicher Sichtbarkeit */}
+                <Box
+                  w={{ base: "100%", lg: selectedKategorie && zonenProKategorie[selectedKategorie.id] ? "57.2%" : "0%" }}
+                  position="relative"
+                  h={{ base: "auto", lg: "calc(100% - 40px)" }}
+                  flex={{ base: "none", lg: selectedKategorie && zonenProKategorie[selectedKategorie.id] ? "1" : "0" }}
+                  mt={{ base: 0, lg: "20px" }}
+                  mb={{ base: 0, lg: "20px" }}
+                  className="zonen-tabelle"
+                  overflow="hidden"
+                  transition="all 0.3s ease-in-out"
+                  opacity={selectedKategorie && zonenProKategorie[selectedKategorie.id] ? 1 : 0}
+                  visibility={selectedKategorie && zonenProKategorie[selectedKategorie.id] ? "visible" : "hidden"}
+                >
+                  {/* Eigene Box statt ContentBox */}
+                  <Box
+                    bg="#151A26" // Dunkler Hintergrund wie ContentBox
+                    borderRadius="24px" // Abgerundete Ecken
+                    boxShadow="card" // Schatten wie ContentBox
+                    _hover={{ boxShadow: "cardHover" }} // Hover-Effekt wie ContentBox
+                    transition="all 0.3s ease" // Transition wie ContentBox
+                    h="100%" // Volle Höhe des Containers
+                    w="100%" // Volle Breite des Containers
+                    position="relative" // Für absolute Positionierung des Buttons
+                    overflow="hidden" // Verhindert Scrolling der Box selbst
+                    px={3} // Horizontales Padding
+                    pt={1} // Reduziertes Padding oben
+                    pb={3} // Padding unten
+                  >
+                    {/* Titel */}
+                    <Flex
+                      position="absolute"
+                      top={2}
+                      left={3}
+                      right={3}
+                      alignItems="center"
+                      justifyContent="space-between"
+                      zIndex={2}
+                    >
+                      <Box
+                        fontSize="lg"
+                        fontWeight="bold"
+                        color="white"
+                      >
                         Zonen
                       </Box>
-                      <Box as="th" py={3} px={4} textAlign="left" fontWeight="semibold" color="gray.700" _dark={{ color: "gray.700" }} borderBottom="1px solid" borderColor="gray.200">
-                        Status
-                      </Box>
-                      <Box as="th" py={3} px={4} textAlign="right" fontWeight="semibold" color="gray.700" _dark={{ color: "gray.700" }} borderBottom="1px solid" borderColor="gray.200">
-                        Aktionen
-                      </Box>
-                    </Box>
-                  </Box>
-                  <Box as="tbody">
-                    {/* Zeile 1 */}
-                    <Box as="tr" _hover={{ bg: "gray.50" }} _dark={{ _hover: { bg: "gray.50" } }}>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" color="gray.800" _dark={{ color: "gray.800" }}>
-                        Trading Zone Alpha
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" color="gray.800" _dark={{ color: "gray.800" }}>
-                        <Box as="span" px={2} py={1} bg="blue.100" color="blue.800" borderRadius="md" fontSize="sm">
-                          Trading
-                        </Box>
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" color="gray.800" _dark={{ color: "gray.800" }}>
-                        8
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200">
-                        <Box as="span" px={2} py={1} bg="green.100" color="green.800" borderRadius="md" fontSize="sm">
-                          Aktiv
-                        </Box>
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" textAlign="right">
-                        <Button size="sm" variant="ghost" color="blue.500" mr={2}>
-                          Bearbeiten
-                        </Button>
-                        <Button size="sm" variant="ghost" color="red.500">
-                          Löschen
-                        </Button>
+                    </Flex>
+
+                    {/* Button zum Erstellen einer neuen Zone */}
+                    <Box
+                      position="absolute"
+                      top="5px"
+                      right="10px"
+                      zIndex="10"
+                    >
+                      <Box
+                        as="button"
+                        onClick={() => console.log('Neue Zone erstellen')}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        gap={2}
+                        bg="#90FF00" // Grün wie der aktive Button in der Notch-Bar
+                        color="black" // Schwarzer Text auf grünem Hintergrund
+                        px={3}
+                        py={2}
+                        borderRadius="full"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        _hover={{ bg: "#7FE000" }} // Etwas dunkleres Grün beim Hovern
+                        transition="all 0.2s"
+                        cursor="pointer" // Mauszeiger wird zum Pointer
+                      >
+                        <FiPlus size={14} />
+                        <Text>Zone erstellen</Text>
                       </Box>
                     </Box>
 
-                    {/* Zeile 2 */}
-                    <Box as="tr" _hover={{ bg: "gray.50" }} _dark={{ _hover: { bg: "gray.50" } }}>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" color="gray.800" _dark={{ color: "gray.800" }}>
-                        Farming Beta
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" color="gray.800" _dark={{ color: "gray.800" }}>
-                        <Box as="span" px={2} py={1} bg="purple.100" color="purple.800" borderRadius="md" fontSize="sm">
-                          Farming
-                        </Box>
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" color="gray.800" _dark={{ color: "gray.800" }}>
-                        12
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200">
-                        <Box as="span" px={2} py={1} bg="green.100" color="green.800" borderRadius="md" fontSize="sm">
-                          Aktiv
-                        </Box>
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" textAlign="right">
-                        <Button size="sm" variant="ghost" color="blue.500" mr={2}>
-                          Bearbeiten
-                        </Button>
-                        <Button size="sm" variant="ghost" color="red.500">
-                          Löschen
-                        </Button>
-                      </Box>
-                    </Box>
-
-                    {/* Zeile 3 */}
-                    <Box as="tr" _hover={{ bg: "gray.50" }} _dark={{ _hover: { bg: "gray.50" } }}>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" color="gray.800" _dark={{ color: "gray.800" }}>
-                        PvP Arena
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" color="gray.800" _dark={{ color: "gray.800" }}>
-                        <Box as="span" px={2} py={1} bg="red.100" color="red.800" borderRadius="md" fontSize="sm">
-                          PvP
-                        </Box>
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" color="gray.800" _dark={{ color: "gray.800" }}>
-                        4
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200">
-                        <Box as="span" px={2} py={1} bg="red.100" color="red.800" borderRadius="md" fontSize="sm">
-                          Inaktiv
-                        </Box>
-                      </Box>
-                      <Box as="td" py={3} px={4} borderBottom="1px solid" borderColor="gray.200" textAlign="right">
-                        <Button size="sm" variant="ghost" color="blue.500" mr={2}>
-                          Bearbeiten
-                        </Button>
-                        <Button size="sm" variant="ghost" color="red.500">
-                          Löschen
-                        </Button>
-                      </Box>
+                    {/* Scrollbarer Container für die Tabelle */}
+                    <Box
+                      w="100%"
+                      h="calc(100% - 40px)" // Höhe abzüglich des Titels und Padding
+                      mt={8} // Reduzierter Abstand für den Titel
+                      overflow="auto" // Scrolling erlauben
+                      className="custom-scrollbar"
+                    >
+                      <ZonenTabelle
+                        data={selectedKategorie && zonenProKategorie[selectedKategorie.id] ? zonenProKategorie[selectedKategorie.id] : []}
+                        onEdit={(zone) => console.log('Bearbeiten:', zone.name)}
+                        onDelete={(zone) => console.log('Löschen:', zone.name)}
+                      />
                     </Box>
                   </Box>
                 </Box>
-              </Box>
-            </Flex>
-          </NotchedBox>
+              </Flex>
+            </NotchedBox>
+          </Box>
         </Flex>
-      </Flex>
+
+
+      </Box>
     </Flex>
   );
 }

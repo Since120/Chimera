@@ -34,7 +34,7 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
           <ChakraTooltip.Positioner>
             <ChakraTooltip.Content
               ref={ref}
-              bg="#1f2c40"
+              bg="dark.800"
               color="white"
               px={3}
               py={2}
@@ -44,7 +44,7 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
               {...contentProps}>
               {showArrow && (
                 <ChakraTooltip.Arrow>
-                  <ChakraTooltip.ArrowTip bg="#1f2c40" />
+                  <ChakraTooltip.ArrowTip bg="dark.800" />
                 </ChakraTooltip.Arrow>
               )}
               {content}

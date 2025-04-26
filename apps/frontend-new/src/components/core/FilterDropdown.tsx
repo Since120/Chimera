@@ -41,18 +41,18 @@ export const FilterDropdown = forwardRef<HTMLDivElement, FilterDropdownProps>(
             <Flex
               as="div"
               role="button"
-              bg="#151A26"
-              color="gray.300"
+              bg="button.filter.bg"
+              color="button.filter.textColor"
               borderRadius="full"
               h="50px"
               w="full"
               flex="1"
               minW={0}
-              boxShadow="0 12px 28px -6px rgba(0,0,0,0.35), 0 8px 12px -8px rgba(0,0,0,0.25)"
+              boxShadow="card"
               backdropFilter="blur(5px)"
               transition="all 0.2s ease"
-              _hover={{ bg: "#1D2433" }}
-              _active={{ bg: "#232A3D" }}
+              _hover={{ bg: "button.filter.hoverBg" }}
+              _active={{ bg: "button.filter.activeBg" }}
               display="flex"
               alignItems="center"
               justifyContent="space-between"
@@ -78,23 +78,23 @@ export const FilterDropdown = forwardRef<HTMLDivElement, FilterDropdownProps>(
               <Flex
                 alignItems="center"
                 justifyContent="center"
-                bg="#1E2536"
+                bg="button.filter.iconCircleBg"
                 borderRadius="full"
                 boxSize="50px"
                 minW="38px"
                 flexShrink={0}
               >
-                <Icon as={LuChevronDown} color="white" boxSize="18px" />
+                <Icon as={LuChevronDown} color="button.filter.iconColor" boxSize="18px" />
               </Flex>
             </Flex>
           </Menu.Trigger>
 
           <Menu.Positioner>
             <Menu.Content
-              bg="#1A202C"
+              bg="dark.800"
               borderColor="gray.700"
               borderRadius="xl"
-              boxShadow="lg"
+              boxShadow="card"
               zIndex="popover"
               p="1"
             >
@@ -107,8 +107,8 @@ export const FilterDropdown = forwardRef<HTMLDivElement, FilterDropdownProps>(
                       key={option.value}
                       value={option.value}
                       bg="transparent"
-                      _hover={{ bg: "#1D2433" }}
-                      _focus={{ bg: "#232A3D" }}
+                      _hover={{ bg: "button.filter.hoverBg" }}
+                      _focus={{ bg: "button.filter.activeBg" }}
                       color="gray.300"
                       fontSize="sm"
                       borderRadius="lg"

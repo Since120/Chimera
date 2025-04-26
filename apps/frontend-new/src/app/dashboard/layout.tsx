@@ -51,9 +51,9 @@ export default function DashboardLayout({
   return (
     <GuildProvider> {/* Provider hier einfügen */}
       <Flex
-        h="100vh"
-        overflowX="hidden" // Verhindert horizontale Scrollbars
-        overflowY="hidden" // Verhindert vertikale Scrollbars
+        h={{ base: "auto", lg: "100vh" }}
+        w="100%"
+        overflow={{ base: "auto", lg: "hidden" }} // Erlaubt Scrolling auf Tablets, verhindert es auf Desktop
         // Direkte Styling-Anwendung mit style-Prop
         style={mainGradientBackground} // Verwendung der zentralen Hintergrund-Definition
       >
@@ -66,8 +66,7 @@ export default function DashboardLayout({
       <Flex
         direction="column"
         flex="1"
-        overflowY="auto"
-        // overflowX="hidden" wurde auf das äußere Flex-Element verschoben
+        overflow="hidden" // Verhindert Scrolling auf dieser Ebene
         position="relative"
         boxShadow={actuallyExpanded ?
           "0 20px 25px -5px rgba(0,0,0,0.4), 0 10px 10px -5px rgba(0,0,0,0.3)" :
@@ -157,7 +156,18 @@ export default function DashboardLayout({
         />
 
         {/* Seiteninhalt */}
-        <Box as="main" pt={8} px={6} pb={6} flex="1">
+        <Box
+          as="main"
+          pt={8}
+          px={6}
+          pb={6}
+          flex="1"
+          overflow="auto" // Erlaubt Scrolling auf dieser Ebene
+          display="flex" // Flex-Container für Kinder
+          flexDirection="column" // Spaltenanordnung
+          h={{ base: "auto", lg: "calc(100vh - 64px)" }} // Auf Desktop: Exakte Höhe ist Viewport minus TopNav
+          minH={{ base: "calc(100vh - 64px)", lg: "0" }} // Auf Tablets: Mindesthöhe ist Viewport minus TopNav
+        >
           {children}
         </Box>
       </Flex>

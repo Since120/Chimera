@@ -34,7 +34,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
       <Drawer.Backdrop bg="blackAlpha.600" />
       <Drawer.Positioner>
         <Drawer.Content
-          bg="#0c111b"
+          bg="dashboardBg"
           color="white"
           maxWidth="280px"
           boxShadow="dark-lg"

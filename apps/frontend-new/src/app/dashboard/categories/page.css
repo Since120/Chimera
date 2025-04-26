@@ -1,0 +1,40 @@
+/* Zentriere die Labels in der Aktionen-Spalte */
+.actions-column-label {
+  text-align: center !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+/* Stile für den Vollbildmodus */
+.fullscreen-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Stile für die NotchedBox im Vollbildmodus */
+.notched-box-fullscreen {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 100 !important;
+}
+
+/* Stile für die anderen Elemente im Vollbildmodus */
+.fullscreen-active .content-box-container,
+.fullscreen-active .filter-bar-container {
+  height: 0 !important;
+  opacity: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Stile für die NotchedBox-Container im Vollbildmodus */
+.fullscreen-active .notched-box-container {
+  flex: 1 !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  transition: all 0.3s ease-in-out;
+}

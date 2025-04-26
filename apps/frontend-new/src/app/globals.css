@@ -51,3 +51,88 @@ a {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Globale Tabellenstile */
+.chakra-table tr {
+  height: 100px !important;
+}
+
+.chakra-table th,
+.chakra-table td {
+  padding: 20px !important;
+}
+
+/* Benutzerdefinierte Scrollbar-Stile */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1C212D;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #151A26;
+}
+
+/* Ausblenden der Scrollbar-Buttons (Pfeile) */
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Spezifische Stile für die DataTable-Scrollbar */
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Noch aggressivere Ausblendung der Scrollbar-Buttons */
+::-webkit-scrollbar-button:vertical:start:decrement,
+::-webkit-scrollbar-button:vertical:end:increment,
+::-webkit-scrollbar-button:horizontal:start:decrement,
+::-webkit-scrollbar-button:horizontal:end:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Firefox Scrollbar-Stile */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1C212D transparent;
+}
+
+/* Benutzerdefinierte Scrollbar für den Vollbildmodus */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1C212D;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #2A3349;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #1C212D transparent;
+}

@@ -213,15 +213,15 @@ export default function LoginPage() {
           />
 
           <MotionBox
-            bg="#0c111b"
-            _dark={{ bg: "#0c111b" }}
+            bg="login.card.background"
+            _dark={{ bg: "login.card.background" }}
             opacity={0.9}
             backdropFilter="blur(16px)"
             borderRadius="3xl"
-            boxShadow="0 30px 60px -10px rgba(0,0,0,0.5), 0 18px 36px -18px rgba(0,0,0,0.4)"
+            boxShadow="shadows.loginCard"
             overflow="hidden"
             border="1px solid"
-            borderColor="rgba(255, 255, 255, 0.08)"
+            borderColor="login.card.border"
             position="relative"
             zIndex={1}
             _before={{
@@ -230,7 +230,7 @@ export default function LoginPage() {
               inset: '-1px',
               borderRadius: '3xl',
               padding: '1px',
-              background: 'linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), transparent, rgba(255, 255, 255, 0.05))',
+              background: 'var(--chakra-colors-login-card-glassGradient)',
               WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
               WebkitMaskComposite: 'xor',
               maskComposite: 'exclude',
@@ -243,7 +243,7 @@ export default function LoginPage() {
             }}
         >
           {/* Header Bar mit Login-Tab */}
-          <Flex justify="center" p={2} bg="#0f1523" opacity={0.7}>
+          <Flex justify="center" p={2} bg="login.header.background" opacity={0.7}>
             <Box
               bg="nav.activeGreen"
               borderRadius="full"
@@ -281,7 +281,7 @@ export default function LoginPage() {
 
               {/* Fehleranzeige */}
               {error && (
-                <Box mt={4} p={3} borderRadius="md" bg="rgba(254, 178, 178, 0.16)" borderLeft="4px solid" borderColor="red.500">
+                <Box mt={4} p={3} borderRadius="md" bg="login.error.background" borderLeft="4px solid" borderColor="login.error.borderColor">
                   <Flex direction="column" align="flex-start">
                     <Heading as="h4" size="xs" color="red.400" mb={1}>
                       Anmeldefehler
@@ -310,7 +310,7 @@ export default function LoginPage() {
 
               {/* Bot preview mit holografischem Effekt */}
               <Box
-                bg="#0f1523"
+                bg="login.botPreview.background"
                 opacity={0.8}
                 borderRadius="xl"
                 p={{ base: 3, sm: 4, md: 5 }}
@@ -320,8 +320,8 @@ export default function LoginPage() {
                 overflow="hidden"
                 backdropFilter="blur(8px)"
                 style={{
-                  backgroundImage: 'linear-gradient(135deg, transparent 0%, rgba(15, 21, 35, 0.2) 50%, transparent 100%)',
-                  boxShadow: 'inset 0 0 20px rgba(144, 255, 0, 0.05)'
+                  backgroundImage: 'var(--chakra-colors-login-botPreview-gradient)',
+                  boxShadow: 'var(--chakra-colors-login-botPreview-shadow)'
                 }}
               >
                 {/* Holografische Linien */}
@@ -359,7 +359,7 @@ export default function LoginPage() {
                       position="absolute"
                       inset="0"
                       borderRadius="full"
-                      bgGradient="linear(to-br, #0c111b, #0f1523)"
+                      bgGradient="login.botPreview.iconGradient"
                       animation={pulseSlowAnimation}
                     />
                     <Box position="absolute" inset="0" borderRadius="full">

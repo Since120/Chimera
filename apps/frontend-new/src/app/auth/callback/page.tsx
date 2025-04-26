@@ -32,10 +32,10 @@ export default function AuthCallbackPage() {
         w="full"
         p={8}
         borderRadius="xl"
-        bg="#0c111b"
-        boxShadow="0 10px 25px -5px rgba(0,0,0,0.3)"
+        bg="dashboardBg"
+        boxShadow="dark-lg"
         border="1px solid"
-        borderColor="rgba(255, 255, 255, 0.08)"
+        borderColor="login.borderColor"
       >
         <Spinner size="xl" color="green.500" mb={4} />
         <Heading as="h2" size="lg" color="white" mb={2}>
