@@ -1,0 +1,10 @@
+{
+  "type": "code_pattern",
+  "importance": "high",
+  "content": "Das Dokument definiert die wichtigsten Datenstrukturen für Project Chimera, die zwischen Frontend und Backend ausgetauscht werden (API DTOs) oder modulübergreifend im Backend verwendet werden. Diese sind im packages/shared-types-Verzeichnis des Monorepos organisiert. Die DTOs sind in sechs Hauptkategorien unterteilt: 1) Core & Auth DTOs/Types (für Authentifizierung und Benutzerprofile), 2) Permissions DTOs (mit einer aktualisierten Definition, die die direkte Zuweisung von Permissions an Discord-Rollen oder User widerspiegelt), 3) Levels DTOs (für Allianz/Gruppen), 4) Dynamic Voices & Tracking DTOs/Types (für Kategorien, Zonen, Punktestände und Transaktionen), 5) Warenwirtschaft DTOs (für Währungen, Items, Listings und Handelsaktionen) und 6) Interne Event Payloads (für die Kommunikation zwischen Backend-Modulen). Besonders wichtig ist die Aktualisierung der Permissions DTOs, die das überarbeitete Berechtigungskonzept widerspiegeln, bei dem Permissions direkt an Discord-Rollen oder User gebunden werden, statt interne Dashboard-Rollen zu verwenden. Auch die GuildSelectionInfoDto wurde angepasst, um die effektiven Berechtigungen des aktuellen Users für jede Guild zu enthalten. Das Dokument betont die Wichtigkeit von Validierungsregeln für API Payloads, konsistenter Namensgebung und klarer Kennzeichnung optionaler Felder.",
+  "tags": ["DTOs", "API", "Shared Types", "Interfaces", "Permissions", "Auth", "Dynamic Voices", "Tracking", "Warenwirtschaft", "Event Payloads", "ResourceScope", "Discord-Rollen"],
+  "metadata": {
+    "source": "Shared Types & API DTOs.md",
+    "created": "2023-11-15"
+  }
+}

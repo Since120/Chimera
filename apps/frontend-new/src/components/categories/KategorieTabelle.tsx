@@ -4,6 +4,7 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { DataTable } from "@/components/core/DataTable";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { LightMode } from "@/components/ui/color-mode";
 
 // Definiere den Typ für eine Kategorie
 export interface Kategorie {
@@ -45,20 +46,23 @@ export const KategorieTabelle: React.FC<KategorieTabelleProps> = ({
   compactMode = false
 }) => {
   return (
-    <DataTable
+    <LightMode>
+      <DataTable
       columns={[
         {
           header: 'Name',
           accessor: 'name',
           label: 'Kategoriename',
           priority: 100, // Höchste Priorität
-          alwaysVisible: true // Immer sichtbar
+          alwaysVisible: true, // Immer sichtbar
+          minWidth: 150 // Mindestbreite in Pixeln
         },
         {
           header: 'Zonen',
           accessor: 'zones',
           label: 'Anzahl Zonen',
-          priority: 90 // Sehr hohe Priorität
+          priority: 90, // Sehr hohe Priorität
+          minWidth: 120 // Mindestbreite in Pixeln
         },
         {
           header: 'Nutzer',
@@ -72,7 +76,7 @@ export const KategorieTabelle: React.FC<KategorieTabelleProps> = ({
           label: 'Sichtbarkeit',
           contentFontSize: '0.8em',
           contentFontWeight: '600',
-          cell: (value) => <Text color={value ? 'green.500' : 'red.500'} fontWeight="600" fontSize="0.8em">{value ? 'Ja' : 'Nein'}</Text>,
+          cell: (value) => <Text color={value ? 'status.success' : 'status.error'} fontWeight="600" fontSize="0.8em" lineHeight="1">{value ? 'Ja' : 'Nein'}</Text>,
           priority: 60 // Mittlere Priorität
         },
         {
@@ -81,7 +85,7 @@ export const KategorieTabelle: React.FC<KategorieTabelleProps> = ({
           label: 'Tracking aktiv',
           contentFontSize: '0.8em',
           contentFontWeight: '600',
-          cell: (value) => <Text color={value ? 'green.500' : 'red.500'} fontWeight="600" fontSize="0.8em">{value ? 'Ja' : 'Nein'}</Text>,
+          cell: (value) => <Text color={value ? 'status.success' : 'status.error'} fontWeight="600" fontSize="0.8em" lineHeight="1">{value ? 'Ja' : 'Nein'}</Text>,
           priority: 50 // Mittlere Priorität
         },
         {
@@ -90,7 +94,7 @@ export const KategorieTabelle: React.FC<KategorieTabelleProps> = ({
           label: 'Setup',
           contentFontSize: '0.8em',
           contentFontWeight: '600',
-          cell: (value) => <Text color={value ? 'green.500' : 'red.500'} fontWeight="600" fontSize="0.8em">{value ? 'Ja' : 'Nein'}</Text>,
+          cell: (value) => <Text color={value ? 'status.success' : 'status.error'} fontWeight="600" fontSize="0.8em" lineHeight="1">{value ? 'Ja' : 'Nein'}</Text>,
           priority: 40 // Mittlere Priorität
         },
         {
@@ -114,50 +118,39 @@ export const KategorieTabelle: React.FC<KategorieTabelleProps> = ({
         {
           header: 'Aktionen',
           accessor: 'id',
-          label: '',
+          label: 'Aktionen',
           priority: 95, // Sehr hohe Priorität
           alwaysVisible: true, // Immer sichtbar
           cell: (_, row) => (
-            <Flex direction="column" alignItems="center">
-              <Text
-                fontSize="0.7em"
-                fontWeight="normal"
-                color="gray.400"
-                mb="8px"
-                textAlign="center"
+            <Flex gap={4} justifyContent="center" alignItems="center">
+              <Box
+                as="button"
+                onClick={(e) => {
+                  e.stopPropagation(); // Verhindert, dass der Klick die Zeile auswählt
+                  onEdit(row as Kategorie);
+                }}
+                className="data-table-icon"
+                transition="color 0.2s"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
               >
-                Aktionen
-              </Text>
-              <Flex gap={4} justifyContent="center">
-                <Box
-                  as="button"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Verhindert, dass der Klick die Zeile auswählt
-                    onEdit(row as Kategorie);
-                  }}
-                  className="data-table-icon"
-                  transition="color 0.2s"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <FiEdit size={18} style={{ display: 'block' }} />
-                </Box>
-                <Box
-                  as="button"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Verhindert, dass der Klick die Zeile auswählt
-                    onDelete(row as Kategorie);
-                  }}
-                  className="data-table-icon"
-                  transition="color 0.2s"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <FiTrash2 size={18} style={{ display: 'block' }} />
-                </Box>
-              </Flex>
+                <FiEdit size={18} style={{ display: 'block' }} />
+              </Box>
+              <Box
+                as="button"
+                onClick={(e) => {
+                  e.stopPropagation(); // Verhindert, dass der Klick die Zeile auswählt
+                  onDelete(row as Kategorie);
+                }}
+                className="data-table-icon"
+                transition="color 0.2s"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <FiTrash2 size={18} style={{ display: 'block' }} />
+              </Box>
             </Flex>
           )
         }
@@ -165,15 +158,11 @@ export const KategorieTabelle: React.FC<KategorieTabelleProps> = ({
       data={data}
       size="md"
       showHeader={false}
-      mode="light" // Verwenden des vordefinierten Light-Mode
+      colorMode="light" // Light Mode für die KategorieTabelle
       rowSpacing={8}
       rowBorderWidth={1}
-      // Keine expliziten Farben mehr nötig, da sie im Light-Mode bereits definiert sind
-      labelFontSize="0.7em"
-      contentFontSize="0.9em"
-      labelFontWeight="300"
-      contentFontWeight="300"
       compactMode={compactMode} // Kompakter Modus, wenn aktiviert
+      maxCompactColumns={7} // Maximal 3 Spalten im kompakten Modus
       // Keine explizite Anzahl von Spalten angeben, um die dynamische Logik zu nutzen
       // Klickbare Zeilen
       onRowClick={(row) => {
@@ -190,14 +179,14 @@ export const KategorieTabelle: React.FC<KategorieTabelleProps> = ({
       getRowProps={(row) => {
         const kategorie = row as Kategorie;
         return {
-          // Verwenden der vordefinierten aktiven Stile
-          bg: kategorie.id === selectedKategorieId ? undefined : undefined, // Verwenden der vordefinierten aktiven Farbe
-          borderColor: kategorie.id === selectedKategorieId ? undefined : undefined, // Verwenden der vordefinierten aktiven Rahmenfarbe
+          // Verwenden der semantischen Tokens für aktive Stile
+          // Keine expliziten Farben mehr nötig, da sie über die isActive-Eigenschaft gesteuert werden
           borderWidth: kategorie.id === selectedKategorieId ? '1px' : undefined,
           cursor: 'pointer', // Zeigt an, dass die Zeile klickbar ist
           isActive: kategorie.id === selectedKategorieId // Markieren der aktiven Zeile
         };
       }}
     />
+    </LightMode>
   );
 };

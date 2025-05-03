@@ -1,0 +1,131 @@
+# Project Chimera - Product Requirements Document (PRD)
+(Letzte Aktualisierung: 27.04.2025)
+
+## PROJEKT-BASIS
+---------------------------------------------------------------
+
+### 1. Projekt-Übersicht & Vision
+**Projektname:** Project Chimera
+**Ziel:** Entwicklung eines fortschrittlichen, modularen Discord-Bot-Ökosystems mit einem modernen, intuitiven Web-Dashboard zur Verwaltung.
+**Kernfunktionen:** Intelligentes Community-Management, Benutzerengagement (Gamification via Punktesystem/Tracking), dynamische Voice-Channel-Verwaltung, integrierte Community-Ökonomie (Marktplatz).
+**Vision:** Verbesserung der Community-Interaktion und -Verwaltung auf Discord durch datenbasierte Automatisierungen, Anreize und ein herausragendes Benutzererlebnis.
+
+### 2. Kernphilosophie & Leitprinzipien
+- **Strukturierte Komplexitätsbewältigung:** Einsatz von Frameworks (Nest.js, Next.js), verwalteten Diensten (Supabase) und strikter Modularisierung zur Beherrschung der Komplexität. Iterativer MVP-Ansatz.
+- **Modularität & Erweiterbarkeit:** Klare Trennung in Core-, Levels- und Plugin-Module mit definierten Schnittstellen.
+- **Anpassbarkeit & Flexibilität:** Unterstützung verschiedener Community-Strukturen (Guild, Allianz, Gruppe) über eine polymorphe resource_scopes-Architektur.
+- **Robuste & Wartbare Codebasis:** Konsequentes TypeScript (strict), Linting/Formatting, geplante Tests (Unit, Integration, E2E), saubere Fehlerbehandlung, Logging.
+- **Intuitive User Experience:** Klarheit im Dashboard trotz Komplexität, visuelle Hilfen, Nutzung moderner Discord UI-Elemente im Bot.
+- **Datenkonsistenz (MVP-Ansatz):** Dashboard → Discord Änderungen werden umgesetzt. Discord → DB nur einfache Updates (Namen, Löschungen markieren). Keine automatische "Selbstheilung" in v1. Inkonsistenzen werden im Dashboard angezeigt.
+- **Monetarisierung:** Technische Vorbereitung durch Feature-Flags.
+
+### 3. Zielgruppe
+Administratoren und Manager von (primär Gaming-) Discord-Servern und -Allianzen, die eine professionelle "All-in-One"-Lösung suchen und bereit sind, für ein leistungsstarkes Tool zu bezahlen.
+
+### 4. Core Architekturkonzepte
+- **Guild-Zentrierung:** Alle Ressourcen und Aktionen sind einem eindeutigen Scope (primär Guild) zugeordnet.
+- **Authentifizierung:** Discord OAuth2 via Supabase. Backend validiert Supabase JWT. Session-Informationen enthalten User-Profil und relevante Guilds inkl. Permissions.
+- **Kontext-Level:** Unterstützung für Guild (Standard), Allianz (Multi-Guild), Gruppe (Sub-Guild) über resource_scopes-Tabelle. (MVP konzentriert sich primär auf Guild-Level).
+- **Berechtigungssystem (RBAC):** Discord-Rollen-zentriert. Permissions werden direkt Discord-Rollen oder optional Usern pro Guild zugewiesen (permissions, guild_discord_role_permissions, guild_user_permissions). Effektive Rechte werden im Backend berechnet und ans Frontend übermittelt.
+- **Zwei-Wege-Sync (MVP):** Nur Erkennung und einfache Updates von Discord → DB. Keine automatische Korrektur.
+
+### 5. Technologie-Stack
+**Monorepo:** pnpm workspaces (apps/frontend-new, apps/backend, packages/shared-types).
+
+**Frontend (apps/frontend-new):**
+- Framework: Next.js 14+ (App Router)
+- Sprache: TypeScript
+- UI: Chakra UI v3 (@chakra-ui/react, @emotion/react, @chakra-ui/cli)
+- Styling: Stark Theme-basiert (Tokens, Semantic Tokens, Recipes), Style Props, css Prop.
+- State Management: React Context (Auth, Guild), useState/useReducer. (Zustand/Jotai geplant für komplexere Fälle).
+- Data Fetching: axios (für Backend API), Supabase Client, React Query (@tanstack/react-query).
+- Animation: Framer Motion (Layout), Chakra UI Animationen, JS (für NotchedBox clip-path).
+- Formulare: React Hook Form (geplant/teilweise integriert).
+- Icons: react-icons (z.B. Lu...).
+
+**Backend (apps/backend):**
+- Framework: Nest.js
+- Sprache: TypeScript
+- Datenbank/BaaS: Supabase (PostgreSQL, Auth)
+- Bot-Integration: discord.js (initial direkt in Nest.js integriert via BotGatewayService, DiscordApiService).
+- API: REST
+- Queueing: BullMQ mit Redis-Backend (aktuell lokal, Upstash als Option).
+- Caching/State/RateLimit: Redis (Upstash für RateLimit/Debounce-State).
+- HTTP Client: @nestjs/axios (für direkte Discord API Calls).
+- Konfiguration: @nestjs/config, Joi-Validierung.
+
+**Shared Types (packages/shared-types):** TypeScript DTOs, Interfaces, Enums.
+
+### 6. Frontend Design Philosophie
+**Ziel:** Modernes, intuitives, visuell einzigartiges Dashboard (Salesforce-inspiriert).
+**Layout:** Einklappbare SideNav (mit "Keller"-Effekt), TopNav (mit kontextueller SubNav), Hauptinhaltsbereich mit NotchedBox und ContentBox.
+**Farbschema:** Primär Dark Mode, differenzierte dunkle Töne, leuchtender Akzent (Grün - nav.activeGreen).
+**Kern-UI-Komponenten:** NotchedBox (mit dynamischem clip-path), ContentBox, FilterBar, FilterDropdown, DataTable.
+**Responsivität:** Hybrid-Ansatz (Breakpoints, Media Queries), Anpassung von Navigation und Elementen.
+
+### 7. Allgemeine Anforderungen
+- Hohe Code-Qualität und Lesbarkeit.
+- Testbarkeit (Unit, Integration, E2E Tests sind geplant).
+- Konsequente Nutzung des Theming-Systems (außer definierte Ausnahmen).
+- Barrierefreiheit (Grundlagen beachten).
+
+## AKTUELLER FOKUS: UI Finalisierung Phase 2 & Core Component Optimierung
+---------------------------------------------------------------
+
+### Beschreibung
+Nach dem erfolgreichen Theming-Refactoring und der grundlegenden Implementierung der Modal-Mechanik liegt der Fokus nun darauf, die Formulare für Kategorien/Zonen benutzerfreundlich zu gestalten, die Performance der NotchedBox zu optimieren und die Interaktivität der neuen Core-Komponenten fertigzustellen, bevor die Datenanbindung erfolgt.
+
+### Technischer Kontext für MCP
+- Die NotchedBox-Komponente ist eine benutzerdefinierte UI-Komponente mit komplexem clip-path, die bei Größenänderungen neu berechnet werden muss
+- Die Formulare (CategoryForm, ZoneForm) sind React-Komponenten, die in Modals eingebettet sind
+- Die Filterlogik muss mit dem Zustand der Kategorieseite verbunden werden
+- Chakra UI ist das primäre UI-Framework mit individuellem Theming-System
+
+### Spezifische Anforderungen & Nächste Schritte (Priorisiert)
+
+#### Task 1: Performance-Optimierung NotchedBox
+- Implementiere Debouncing oder Throttling für die calculatePath-Funktion in NotchedBox.tsx (im useEffect/ResizeObserver)
+- Ziel ist die Beseitigung des Flackerns bei Größenänderungen
+- Dateien: components/ui/NotchedBox/NotchedBox.tsx
+
+#### Task 2: Formular Styling & Struktur (CategoryForm, ZoneForm)
+- Verbessere das interne Layout der Formularfelder mithilfe von VStack/Flex und gap-Props (Theme-Tokens)
+- Stelle sicher, dass alle Formularelemente (Inputs, Switches, Buttons) das vorgesehene Styling aus dem Theme verwenden
+- Dateien: components/forms/CategoryForm.tsx, components/forms/ZoneForm.tsx
+
+#### Task 3: NumberInput Wiederherstellung (ZoneForm)
+- Ersetze die `<Input type="number">`-Elemente für "Punkte" und "Minuten" durch die korrekte Chakra UI NumberInput-Komponente
+- Verwende NumberInputField, NumberInputStepper etc. innerhalb des `<Field>`-Wrappers
+- Dateien: components/forms/ZoneForm.tsx
+
+#### Task 4: Button-Funktionalität (NotchedBox in categories/page.tsx)
+- Verbinde die onClick-Handler der Buttons im buttons- und rightButtons-Prop der NotchedBox
+- Implementiere Verbindung zu den entsprechenden Handler-Funktionen (z.B. handleOpenCreateCategoryModal, Tab-Wechsel-Logik)
+- Vorerst console.log für Verifizierung ausreichend
+- Dateien: app/(dashboard)/categories/page.tsx
+
+#### Task 5: Filter-Funktionalität (FilterBar/FilterDropdown)
+- Implementiere State Management (useState) in categories/page.tsx zum Speichern der aktiven Filterwerte
+- Implementiere die onSelect-Handler der FilterDropdown-Komponenten
+- State-Update soll eine simulierte Datenaktualisierung auslösen (console.log)
+- Dateien: app/(dashboard)/categories/page.tsx, components/ui/FilterBar.tsx, components/ui/FilterDropdown.tsx
+
+#### Task 6: Datenanbindung (Nachrangig zu 1-5)
+- Erstelle API-Service-Funktionen (services/categories.ts etc.)
+- Implementiere useQuery (React Query) zum Laden der Kategorie- und Zonendaten
+- Befülle KategorieTabelle und ZonenTabelle mit den geladenen Daten
+- Implementiere Lade- und Fehlerzustände
+- Dateien: services/categories.ts, app/(dashboard)/categories/page.tsx
+
+### Akzeptanzkriterien
+- **NotchedBox Performance**: Die Komponente reagiert flüssig ohne sichtbares Flackern bei Größenänderungen
+- **Formular-Struktur**: Klare visuelle Hierarchie mit konsistenten Abständen in den Modals
+- **Theme-Konsistenz**: Alle UI-Elemente folgen dem Chakra UI Theme-System
+- **NumberInput**: ZoneForm nutzt die spezialisierten Chakra UI Number-Komponenten
+- **Button-Interaktion**: Buttons in der NotchedBox lösen entsprechende Funktionen aus
+- **Filter-Funktionalität**: Filterauswahl aktualisiert State und löst eine Aktion aus (console.log)
+
+### Abhängigkeiten & Ressourcen
+- Chakra UI Dokumentation für NumberInput: https://chakra-ui.com/docs/components/number-input
+- React Query Dokumentation: https://tanstack.com/query/latest/docs/react/overview
+- Bestehende Implementierung des Theming-Systems: theme/index.ts

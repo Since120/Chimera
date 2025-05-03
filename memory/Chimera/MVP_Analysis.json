@@ -1,0 +1,10 @@
+{
+  "type": "decision",
+  "importance": "critical",
+  "content": "Das Dokument definiert das Minimum Viable Product (MVP) für Project Chimera, mit dem Ziel, einen fokussierten, machbaren und wertvollen ersten Release zu ermöglichen. Der MVP-Umfang ist in drei Hauptbereiche gegliedert: 1) Kernsystem (Auth mit Discord OAuth2, Guild Management, Basis-Berechtigungen, Konfiguration, Datenbank Setup, Nest.js Backend, React Dashboard, Bot-Grundfunktionen), 2) Plugin: Dynamic Voices & Tracking (CRUD für Kategorien und Zonen auf Guild-Level, Switches für Sichtbarkeit/Tracking/Setup, Setup-Flow mit dynamischen Rollen, Tracking mit Zeitmessung und Punkteberechnung, Punktesystem mit Transaktionen und Ständen), 3) Plugin: Warenwirtschaft (Integration einer externen API, Fixpreis-Listings, 'Kaufe jetzt'-Funktion, interne 'Punkte'-Währung). Explizit ausgeschlossen vom MVP sind: Allianz-Funktionalität, Gruppen-Funktionalität, fortgeschrittenes Rollen-Management, volle Zwei-Wege-Synchronisation mit 'Selbstheilung', Voice Channel Manager Plugin, erweiterte Warenwirtschaftsfunktionen, Plugin Verwaltung, Plugin Rechtsform/Abstimmungen und umfangreiche Admin-Dashboards. Die Vorteile dieser Definition sind der Fokus auf das Kern-Alleinstellungsmerkmal, die reduzierte Komplexität und der signifikante Nutzen für Endanwender trotz der Einschränkungen.",
+  "tags": ["MVP", "Minimum Viable Product", "Priorisierung", "Dynamic Voices", "Tracking", "Warenwirtschaft", "Auth", "Guild Management", "Setup-Flow", "Punktesystem"],
+  "metadata": {
+    "source": "MVP.md",
+    "created": "2023-11-15"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "architectural",
+  "importance": "critical",
+  "content": "Das Dokument beschreibt ein modulares Discord Bot System mit Dashboard. Kernkonzepte sind die Guild-Zentrierung (alle Funktionen sind mit einer Discord Guild verknüpft), ein Technologie-Stack mit React/Next.js (Frontend), Nest.js (Backend), Supabase (Datenbank) und TypeScript, sowie Discord OAuth2 für die Authentifizierung. Das System operiert auf drei Kontext-Ebenen: Allianz (Zusammenschluss mehrerer Guilds), Guild (Standard) und Gruppen (innerhalb einer Guild). Das Berechtigungskonzept umfasst Discord Admin Funktionen, ein internes Rollen-Management und eine Super Admin Rolle. Hauptplugins sind: 1) Dynamische Voice-Kanäle & Aktivitäts-Tracking (mit Kategorien, Zonen, Setup-Flow, Tracking und Punktesystem), 2) Voice Kanal Manager (zur Verwaltung von Voice-Kanälen), 3) Warenwirtschaft/Handel (für Ingame-Item Handel) und 4) Verwaltung (für Level-Entitäten). Besonders komplex ist die Zwei-Wege-Synchronisation zwischen Discord und Datenbank sowie der Setup-Flow für dynamische Kanalerstellung mit temporären Rollen.",
+  "tags": ["Discord Bot", "Dashboard", "Guild-Zentrierung", "Nest.js", "React", "Next.js", "Supabase", "OAuth2", "Berechtigungssystem", "Voice-Kanäle", "Tracking", "Punktesystem", "Warenwirtschaft", "Setup-Flow"],
+  "metadata": {
+    "source": "Dicord Bot Zusammenfassung.md",
+    "created": "2023-11-15"
+  }
+}

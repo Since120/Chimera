@@ -1,6 +1,7 @@
 {
-  "mcpServers": {
-    "supabase": {
+  "mcpServers": { // Ein einziges mcpServers-Objekt als Top-Level (oder unter "mcp", siehe Hinweis unten)
+
+    "supabase": { // Erster Server: "supabase" ist der Schlüssel
       "command": "cmd",
       "args": [
         "/c",
@@ -8,8 +9,18 @@
         "-y",
         "@supabase/mcp-server-supabase@latest",
         "--access-token",
-        "sbp_300373dfe2dbc04ebdd30da5afdb2ebd815934cd"
+        "sbp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" // BITTE ERSETZEN!! Siehe Sicherheitshinweis!
       ]
+      // Optional: Füge hier "type": "stdio" hinzu, wenn Roo Code das benötigt
+    }, // Komma zwischen den Server-Definitionen
+
+    "context7": { // Zweiter Server: "context7" ist der Schlüssel
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+      // Optional: Füge hier "type": "stdio" hinzu, wenn Roo Code das benötigt
     }
+
+    // Füge hier weitere Server hinzu, jeweils getrennt durch ein Komma
+
   }
 }

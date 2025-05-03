@@ -1,0 +1,10 @@
+{
+  "type": "code_pattern",
+  "importance": "high",
+  "content": "Der Plan beschreibt die Refaktorierung des DataTable-Stylings zu einem vollständig in Chakra UI Theme integrierten Ansatz. Der Prozess ist in vier Phasen gegliedert: 1) Analyse und Vorbereitung (Identifizierung aller Styles in DataTable.css und Komponenten), 2) Definition der Theme-Styles in theme.ts (Erstellung semantischer Tokens für Tabellen und Komponenten-Stil für DataTable), 3) Refactoring der Komponenten (Entfernung von CSS-Imports, mode-Props und expliziten Farbdefinitionen, Ersetzung durch Chakra UI Komponenten und Theme-Tokens), 4) Bereinigung und Testen. Ziel ist es, die Vorteile von Chakra UI wie semantische Tokens und automatische Light/Dark-Mode-Unterstützung voll auszuschöpfen und Konsistenz im Styling zu gewährleisten. Besonderer Fokus liegt auf der Umstellung von expliziten CSS-Klassen und Inline-Styles zu deklarativen Chakra UI Props und semantischen Tokens.",
+  "tags": ["Chakra UI", "Theme", "DataTable", "Refactoring", "Styling", "Light/Dark Mode", "Semantic Tokens", "Components", "CSS", "Frontend"],
+  "metadata": {
+    "source": "DataTable-Theme-Refactoring-Plan.md",
+    "created": "2023-11-15"
+  }
+}

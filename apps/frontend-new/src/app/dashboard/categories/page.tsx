@@ -8,6 +8,7 @@ import { DataTable } from "@/components/core/DataTable";
 import { NotchedBox } from "@/components/core/NotchedBox";
 import { FilterBar } from "@/components/core/FilterBar";
 import { ContentBox } from "@/components/core/ContentBox";
+import { Modal } from "@/components/core/Modal";
 
 // Icons für die Buttons
 import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
@@ -16,6 +17,8 @@ import { FiEye, FiStar, FiCheckCircle } from "react-icons/fi";
 // Komponenten für Kategorien und Zonen
 import { KategorieTabelle, Kategorie } from "@/components/categories/KategorieTabelle";
 import { ZonenTabelle, Zone } from "@/components/zones/ZonenTabelle";
+import { CategoryForm } from "@/components/categories/CategoryForm";
+import { ZoneForm } from "@/components/zones/ZoneForm";
 
 // Daten
 import { kategorien, zonenProKategorie } from "@/data/categoriesData";
@@ -34,6 +37,12 @@ export default function CategoriesPage() {
   // State für die ausgewählte Kategorie
   const [selectedKategorie, setSelectedKategorie] = useState<Kategorie | null>(null);
 
+  // States für Modals
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isZoneModalOpen, setIsZoneModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Kategorie | null>(null);
+  const [editingZone, setEditingZone] = useState<Zone | null>(null);
+
   // Funktion zum Auswählen einer Kategorie
   const handleSelectKategorie = (kategorie: Kategorie | null) => {
     setSelectedKategorie(kategorie);
@@ -41,11 +50,58 @@ export default function CategoriesPage() {
 
   // Funktion zum Zurücksetzen der Auswahl, wenn außerhalb geklickt wird
   const handleOutsideClick = (e: React.MouseEvent) => {
+    // Wenn das Zonen-Modal geöffnet ist, keine Aktion ausführen
+    if (isZoneModalOpen) return;
+
     // Prüfen, ob das Klick-Event von einem Element stammt, das nicht zur Kategorie- oder Zonen-Tabelle gehört
     const target = e.target as HTMLElement;
     if (!target.closest('.kategorie-tabelle') && !target.closest('.zonen-tabelle')) {
       setSelectedKategorie(null);
     }
+  };
+
+  // Handler für Kategorie-Modal
+  const handleOpenCreateCategoryModal = () => {
+    setEditingCategory(null);
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleOpenEditCategoryModal = (kategorie: Kategorie) => {
+    setEditingCategory(kategorie);
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleCloseCategoryModal = () => {
+    setIsCategoryModalOpen(false);
+  };
+
+  const handleCategoryFormSubmit = (data: Partial<Kategorie>) => {
+    console.log('Kategorie speichern:', data);
+    handleCloseCategoryModal();
+  };
+
+  // Handler für Zonen-Modal
+  const handleOpenCreateZoneModal = () => {
+    if (!selectedKategorie) {
+      console.error('Keine Kategorie ausgewählt');
+      return;
+    }
+    setEditingZone(null);
+    setIsZoneModalOpen(true);
+  };
+
+  const handleOpenEditZoneModal = (zone: Zone) => {
+    setEditingZone(zone);
+    setIsZoneModalOpen(true);
+  };
+
+  const handleCloseZoneModal = () => {
+    setIsZoneModalOpen(false);
+  };
+
+  const handleZoneFormSubmit = (data: Partial<Zone>) => {
+    console.log('Zone speichern:', data);
+    handleCloseZoneModal();
   };
 
   // Funktionen zum Umschalten des Vollbildmodus
@@ -345,7 +401,7 @@ export default function CategoriesPage() {
               rightButtons={[
                 {
                   label: 'Neu Kategorie erstellen',
-                  onClick: () => console.log('Neue Kategorie erstellen'),
+                  onClick: handleOpenCreateCategoryModal,
                   icon: <FiPlus size={14} />,
                   iconPosition: 'left'
                 }
@@ -385,6 +441,8 @@ export default function CategoriesPage() {
                     data={kategorien}
                     selectedKategorieId={selectedKategorie?.id || null}
                     onSelectKategorie={handleSelectKategorie}
+                    onEdit={handleOpenEditCategoryModal}
+                    onDelete={(kategorie) => console.log('Löschen:', kategorie.name)}
                     compactMode={selectedKategorie && zonenProKategorie[selectedKategorie.id] ? true : false}
                   />
                 </Box>
@@ -446,7 +504,7 @@ export default function CategoriesPage() {
                     >
                       <Box
                         as="button"
-                        onClick={() => console.log('Neue Zone erstellen')}
+                        onClick={handleOpenCreateZoneModal}
                         display="flex"
                         alignItems="center"
                         justifyContent="center"
@@ -477,7 +535,7 @@ export default function CategoriesPage() {
                     >
                       <ZonenTabelle
                         data={selectedKategorie && zonenProKategorie[selectedKategorie.id] ? zonenProKategorie[selectedKategorie.id] : []}
-                        onEdit={(zone) => console.log('Bearbeiten:', zone.name)}
+                        onEdit={handleOpenEditZoneModal}
                         onDelete={(zone) => console.log('Löschen:', zone.name)}
                       />
                     </Box>
@@ -490,6 +548,34 @@ export default function CategoriesPage() {
 
 
       </Box>
+
+      {/* Kategorie-Modal */}
+      <Modal
+        isOpen={isCategoryModalOpen}
+        onClose={handleCloseCategoryModal}
+        title={editingCategory ? "Kategorie bearbeiten" : "Neue Kategorie erstellen"}
+        size="lg"
+      >
+        <CategoryForm
+          initialData={editingCategory}
+          onSubmit={handleCategoryFormSubmit}
+          onCancel={handleCloseCategoryModal}
+        />
+      </Modal>
+
+      {/* Zonen-Modal */}
+      <Modal
+        isOpen={isZoneModalOpen}
+        onClose={handleCloseZoneModal}
+        title={editingZone ? "Zone bearbeiten" : "Neue Zone erstellen"}
+        size="lg"
+      >
+        <ZoneForm
+          initialData={editingZone}
+          onSubmit={handleZoneFormSubmit}
+          onCancel={handleCloseZoneModal}
+        />
+      </Modal>
     </Flex>
   );
 }

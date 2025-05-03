@@ -4,6 +4,7 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { DataTable } from "@/components/core/DataTable";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { DarkMode } from "@/components/ui/color-mode";
 
 // Definiere den Typ für eine Zone
 export interface Zone {
@@ -32,8 +33,9 @@ export const ZonenTabelle: React.FC<ZonenTabelleProps> = ({
   onDelete = (zone) => console.log('Löschen:', zone.name)
 }) => {
   return (
-    <DataTable
-      columns={[
+    <DarkMode>
+      <DataTable
+        columns={[
         {
           header: 'Name',
           accessor: 'name',
@@ -41,7 +43,10 @@ export const ZonenTabelle: React.FC<ZonenTabelleProps> = ({
           labelFontSize: '0.7em',
           labelFontWeight: '300',
           contentFontSize: '1em',
-          contentFontWeight: '300'
+          contentFontWeight: '300',
+          minWidth: 150, // Mindestbreite in Pixeln
+          priority: 100, // Höchste Priorität
+          alwaysVisible: true // Immer sichtbar
         },
         {
           header: 'Zonen Key',
@@ -60,7 +65,7 @@ export const ZonenTabelle: React.FC<ZonenTabelleProps> = ({
           labelFontWeight: '300',
           contentFontSize: '0.9em',
           contentFontWeight: '500',
-          contentColor: 'navActiveGreenBase'
+          contentColor: 'zone.pointsText'
         },
         {
           header: 'Minuten',
@@ -96,6 +101,9 @@ export const ZonenTabelle: React.FC<ZonenTabelleProps> = ({
           labelFontSize: '0.7em',
           labelFontWeight: '300',
           labelColor: 'gray.400',
+          minWidth: 100, // Mindestbreite in Pixeln
+          priority: 95, // Sehr hohe Priorität
+          alwaysVisible: true, // Immer sichtbar
           cell: (_, row) => (
             <Flex gap={4} justifyContent="center">
               <Box
@@ -125,14 +133,11 @@ export const ZonenTabelle: React.FC<ZonenTabelleProps> = ({
       data={data}
       size="md"
       showHeader={false}
-      mode="dark" // Verwenden des vordefinierten Dark-Mode
+      colorMode="dark" // Dark Mode für die ZonenTabelle
       rowSpacing={8}
       rowBorderWidth={1}
-      // Keine expliziten Farben mehr nötig, da sie im Dark-Mode bereits definiert sind
-      labelFontSize="0.7em"
-      contentFontSize="0.9em"
-      labelFontWeight="300"
-      contentFontWeight="300"
+      compactMode={false} // Kein kompakter Modus für die ZonenTabelle
     />
+    </DarkMode>
   );
 };

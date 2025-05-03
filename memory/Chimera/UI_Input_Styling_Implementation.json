@@ -1,0 +1,16 @@
+{
+  "type": "code_pattern",
+  "importance": "high",
+  "content": "Für die Modals in der Kategorien- und Zonen-Verwaltung wurde eine zentrale Styling-Lösung implementiert, um konsistente Eingabefelder zu gewährleisten. Das Problem mit zu weit links positionierten Hilfstexten und Eingabefeldern wurde durch zwei Maßnahmen behoben: 1) Anpassung der Field-Komponente mit horizontalem Padding (px={3}) für Hilfstexte und 2) Erstellung einer benutzerdefinierten Input-Komponente, die das Design der Filter in der FilterBar übernimmt. Die neue Input-Komponente in apps/frontend-new/src/components/ui/input.tsx verwendet folgende Styling-Eigenschaften: Hintergrundfarbe (bg='button.filter.bg'), Textfarbe (color='button.filter.textColor'), abgerundete Ecken (borderRadius='full'), Höhe (h='50px'), Schatten (boxShadow='card'), Unschärfe-Effekt (backdropFilter='blur(5px)'), Übergangseffekt (transition='all 0.2s ease'), Hover- und Fokus-Effekte sowie keinen Rand (border='none'). Diese zentrale Styling-Definition verbessert die Wartbarkeit, da Änderungen nur an einer Stelle vorgenommen werden müssen, und sorgt für ein einheitliches Erscheinungsbild der Eingabefelder, die nun wie auf dem Hintergrund schwebende Elemente wirken, ähnlich den Filtern in der FilterBar.",
+  "tags": ["UI", "Styling", "Input", "Modal", "Field", "Chakra UI", "Component", "Design", "Filter", "Padding", "Shadow", "Hover Effect"],
+  "metadata": {
+    "source": "UI Implementation",
+    "created": "2023-11-15",
+    "files_modified": [
+      "apps/frontend-new/src/components/ui/field.tsx",
+      "apps/frontend-new/src/components/ui/input.tsx",
+      "apps/frontend-new/src/components/categories/CategoryForm.tsx",
+      "apps/frontend-new/src/components/zones/ZoneForm.tsx"
+    ]
+  }
+}

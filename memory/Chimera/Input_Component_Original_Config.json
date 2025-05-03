@@ -1,0 +1,13 @@
+{
+  "type": "code_pattern",
+  "importance": "medium",
+  "content": "Die ursprüngliche Konfiguration der Input-Komponente in apps/frontend-new/src/components/ui/input.tsx vor dem Hinzufügen des grünen Schatten-Effekts:\n\n```tsx\nimport { Input as ChakraInput, InputProps as ChakraInputProps } from \"@chakra-ui/react\"\nimport * as React from \"react\"\n\nexport interface InputProps extends ChakraInputProps {}\n\nexport const Input = React.forwardRef<HTMLInputElement, InputProps>(\n  function Input(props, ref) {\n    return (\n      <ChakraInput\n        ref={ref}\n        pl={3}\n        bg=\"button.filter.bg\"\n        color=\"button.filter.textColor\"\n        borderRadius=\"full\"\n        h=\"50px\"\n        boxShadow=\"card\"\n        backdropFilter=\"blur(5px)\"\n        transition=\"all 0.2s ease\"\n        _hover={{ bg: \"button.filter.hoverBg\" }}\n        _focus={{\n          bg: \"button.filter.hoverBg\",\n          boxShadow: \"elevated\",\n          borderColor: \"transparent\"\n        }}\n        border=\"none\"\n        {...props}\n      />\n    )\n  }\n)\n```",
+  "tags": ["UI", "Input", "Component", "Styling", "Backup", "Original Configuration"],
+  "metadata": {
+    "source": "UI Implementation",
+    "created": "2023-11-15",
+    "files_referenced": [
+      "apps/frontend-new/src/components/ui/input.tsx"
+    ]
+  }
+}

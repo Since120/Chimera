@@ -1,0 +1,10 @@
+{
+  "type": "architectural",
+  "importance": "critical",
+  "content": "Das Dokument beschreibt detailliert die Funktionsweise des Discord Bots und seiner Komponenten. Zentrale Konzepte sind die Guild-Zentrierung (alle Funktionen sind an eine Discord Guild ID gebunden), Discord Admin Funktionen (Dashboard-Bereich für Server-Administratoren), Authentifizierung über Discord OAuth2, und drei Kontext-Level: Allianz (mehrere Discords), Discord-spezifisch (Standard) und Gruppen (innerhalb eines Discords). Das Rollen-Management ermöglicht die Definition interner Dashboard-Rollen mit spezifischen Berechtigungen. Hauptplugins sind: 1) Dynamic Voices mit Tracking (Kategorien, Zonen, Setup-Flow, Tracking, Punkte), 2) Voice Kanal Manager (Verwaltung von Voice-Kanälen mit Funktionen wie Umbenennen, Limitieren, Sperren), 3) Warenwirtschaft/Handel (Auktionshaus/Marktplatz für Ingame-Items mit verschiedenen Handelsmechanismen), 4) Verwaltung (für Level-Entitäten) und 5) Rechtsform (Abstimmungssystem). Besonders komplex ist der Setup-Flow für dynamische Kanalerstellung mit temporären Rollen und die Zwei-Wege-Synchronisation zwischen Discord und Datenbank.",
+  "tags": ["Discord Bot", "Guild-Zentrierung", "OAuth2", "Rollen-Management", "Dynamic Voices", "Setup-Flow", "Tracking", "Voice Kanal Manager", "Warenwirtschaft", "Handel", "Abstimmungssystem", "Temporäre Rollen"],
+  "metadata": {
+    "source": "Discord Bot.md",
+    "created": "2023-11-15"
+  }
+}

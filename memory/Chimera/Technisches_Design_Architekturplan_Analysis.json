@@ -1,0 +1,10 @@
+{
+  "type": "architectural",
+  "importance": "critical",
+  "content": "Das Dokument beschreibt das Supabase Datenbankschema für Project Chimera, mit detaillierten Tabellendefinitionen und Beziehungen. Es ist in sieben Hauptbereiche gegliedert: 1) Core & Authentifizierung (users, user_profiles, guilds, guild_members), 2) Level-Architektur (alliances, alliance_memberships, groups, group_members), 3) Berechtigungen (mit einem überarbeiteten System, das Permissions direkt an Discord-Rollen oder User bindet), 4) Dynamic Voices & Tracking (resource_scopes, categories, zones, dynamic_channels, user_tracking_state, points_balances, points_transactions), 5) Warenwirtschaft (currencies, listed_items, listings, bids, trade_transactions), 6) Verwaltung (entity_balances) und 7) Weitere Überlegungen. Besonders wichtig ist die Überarbeitung des Berechtigungssystems, das nun auf den Tabellen permissions, guild_discord_role_permissions und guild_user_permissions basiert, statt interne Dashboard-Rollen als zwingende Zwischenschicht zu verwenden. Das Dokument enthält auch detaillierte Spalteninformationen, Primärschlüssel, Fremdschlüssel, Indizes und Constraints für jede Tabelle, sowie Szenarien zur Veranschaulichung der Funktionsweise. Die resource_scopes-Tabelle ist eine zentrale Komponente, die eine polymorphe Verknüpfung zwischen Ressourcen und verschiedenen Leveln (Guild, Allianz, Gruppe) ermöglicht.",
+  "tags": ["Supabase", "Datenbankschema", "Tabellen", "Core", "Authentifizierung", "Level-Architektur", "Berechtigungen", "Dynamic Voices", "Tracking", "Warenwirtschaft", "Verwaltung", "Discord-Rollen", "Permissions", "resource_scopes"],
+  "metadata": {
+    "source": "Technisches Design _ Architekturplan.md",
+    "created": "2023-11-15"
+  }
+}

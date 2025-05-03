@@ -1,0 +1,10 @@
+{
+  "type": "architectural",
+  "importance": "high",
+  "content": "Das Dokument beschreibt das Frontend Dashboard des Project Chimera mit Fokus auf die Umstellung auf Chakra UI v3. Es definiert die Zielsetzung als Entwicklung eines modernen, intuitiven Web-Dashboards zur Verwaltung des Discord Bots mit einem einzigartigen 'WOW'-Erlebnis durch flüssige Animationen. Der Technologie-Stack umfasst Next.js mit App Router, TypeScript, Chakra UI v3 als Haupt-Komponentenbibliothek, React Context API für State Management, React Query für Daten-Fetching, und optional Framer Motion für komplexe Animationen. Das Dokument erklärt detailliert die Ordnerstruktur, das Theming-System mit Tokens, semantischen Tokens, Recipes und Slot Recipes, verschiedene Styling-Ansätze, Komponentenstruktur und Komposition mit asChild-Prop, wichtige Änderungen gegenüber Chakra UI v2, das Navigationskonzept mit dynamischer Sidebar und TopNav, Dark Mode Implementation, Animationsstrategien, responsives Design, Virtual Color (colorPalette), Chakra Factory und Focus Ring. Besonders wichtig sind die Namespaced Components, die Verwendung von CSS-Variablen für bessere Performance und die Umstellung von styleConfig auf recipes.",
+  "tags": ["Frontend", "Dashboard", "Chakra UI v3", "Next.js", "TypeScript", "React", "Theming", "Tokens", "Recipes", "Animations", "Responsive Design", "Dark Mode", "Navigation", "Components"],
+  "metadata": {
+    "source": "Frontend Dashboard.md",
+    "created": "2023-11-15"
+  }
+}

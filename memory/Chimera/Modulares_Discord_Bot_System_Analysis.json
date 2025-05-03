@@ -1,0 +1,10 @@
+{
+  "type": "architectural",
+  "importance": "critical",
+  "content": "Das Dokument beschreibt das modulare Discord Bot System 'Project Chimera', ein hochgradig modulares und funktionsreiches Discord Bot-System mit Web-Dashboard. Kernkonzepte sind die Guild-Zentrierung (alle Funktionen sind an eine Discord Guild gebunden), ein Technologie-Stack mit React/Next.js (Frontend), Nest.js (Backend), Supabase (Datenbank) und TypeScript, sowie Discord OAuth2 für die Authentifizierung. Das System operiert auf drei Kontext-Ebenen: Allianz (mehrere Discords), Guild (Standard) und Gruppen (innerhalb eines Discords). Das Berechtigungskonzept wurde überarbeitet, um direkt Berechtigungen an Discord-Rollen und User zuzuweisen, ohne interne Dashboard-Rollen zu verwenden. Hauptplugins sind: 1) Dynamic Voices & Tracking (Kategorien, Zonen, Setup-Flow, Tracking, Punkte), 2) Voice Kanal Manager (Verwaltung von Voice-Kanälen), 3) Warenwirtschaft/Handel (Auktionshaus/Marktplatz für Ingame-Items) und 4) Verwaltung (für Level-Entitäten). Besonders komplex ist die Zwei-Wege-Synchronisation zwischen Discord und Datenbank sowie der Setup-Flow für dynamische Kanalerstellung mit temporären Rollen. Das Dokument enthält auch einen phasenweisen Implementierungsplan für das MVP und identifiziert Schlüsselherausforderungen wie die Komplexität der Synchronisation und die Skalierbarkeit.",
+  "tags": ["Discord Bot", "Modulares System", "Guild-Zentrierung", "Nest.js", "React", "Next.js", "Supabase", "OAuth2", "Berechtigungssystem", "Dynamic Voices", "Tracking", "Voice Kanal Manager", "Warenwirtschaft", "Zwei-Wege-Synchronisation", "Setup-Flow"],
+  "metadata": {
+    "source": "Modulares Discord Bot System.md",
+    "created": "2023-11-15"
+  }
+}

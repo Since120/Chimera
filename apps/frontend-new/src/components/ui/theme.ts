@@ -79,7 +79,7 @@ const colors = {
     950: { value: "#0D1117" },
   },
 
-  // Farben für TopNav - Umbenannte Basis-Tokens
+  // Farben für TopNav - Basis-Tokens
   navBgBase: { value: "#FFFFFF" },
   navActiveGreenBase: { value: "#90FF00" },
   navIconCircleBgBase: { value: "#1E293A" },
@@ -87,76 +87,110 @@ const colors = {
   navIconBorderColorBase: { value: "rgba(186, 197, 213, 0.6)" }, // Abgeschwächte Rahmenfarbe
   navIconOutlineColorBase: { value: "rgba(186, 197, 213, 0.3)" }, // Noch subtilere Rahmenfarbe für Outline-Buttons
 
+  // Grundlegende Farben
+  whiteBase: { value: "#FFFFFF" },
+  blackBase: { value: "#000000" },
+  whiteAlpha10Base: { value: "rgba(255,255,255,0.1)" },
+  redAlpha10Base: { value: "rgba(239, 68, 68, 0.1)" },
+
   // Filter-Komponenten
-  filter: {
-    bg: { value: "#151A26" },
-    hoverBg: { value: "#1D2433" },
-    activeBg: { value: "#232A3D" },
-    iconCircleBg: { value: "#1E2536" }
-  },
+  filterBgBase: { value: "#151A26" },
+  filterHoverBgBase: { value: "#1D2433" },
+  filterActiveBgBase: { value: "#232A3D" },
+  filterIconCircleBgBase: { value: "#1E2536" },
 
   // NotchedBox-Komponente
-  notchButton: {
-    activeBg: { value: "#90FF00" }, // Gleich wie navActiveGreenBase
-    inactiveBg: { value: "#1E2536" }, // Gleich wie filter.iconCircleBg
-    activeColor: { value: "black" },
-    inactiveColor: { value: "white" },
-    badgeBgActive: { value: "rgba(0,0,0,0.2)" },
-    badgeColorActive: { value: "black" },
-    badgeBgInactive: { value: "gray.700" },
-    badgeColorInactive: { value: "gray.300" },
-    dotColor: { value: "black" }
-  },
+  notchButtonActiveBgBase: { value: "#90FF00" }, // Gleich wie navActiveGreenBase
+  notchButtonInactiveBgBase: { value: "#1E2536" }, // Gleich wie filterIconCircleBgBase
+  notchButtonActiveColorBase: { value: "black" },
+  notchButtonInactiveColorBase: { value: "white" },
+  notchButtonBadgeBgActiveBase: { value: "rgba(0,0,0,0.2)" },
+  notchButtonBadgeColorActiveBase: { value: "black" },
+  notchButtonBadgeBgInactiveBase: { value: "gray.700" },
+  notchButtonBadgeColorInactiveBase: { value: "gray.300" },
+  notchButtonDotColorBase: { value: "black" },
 
   // ContentBox-Komponente
-  contentBox: {
-    darkBg: { value: "#151A26" },
-    lightBg: { value: "white" }
-  },
+  contentBoxDarkBgBase: { value: "#151A26" },
+  contentBoxLightBgBase: { value: "white" },
 
   // Dashboard-Hintergrund
-  dashboardBg: { value: "#0c111b" },
-  contentBg: { value: "white" },
+  dashboardBgBase: { value: "#0c111b" },
+  contentBgBase: { value: "white" },
 
   // Login-Seite
-  login: {
-    cardBg: { value: "#0c111b" },
-    headerBg: { value: "#0f1523" },
-    botPreviewBg: { value: "#0f1523" },
-    botIconGradientStart: { value: "#0c111b" },
-    botIconGradientEnd: { value: "#0f1523" },
-    borderColor: { value: "rgba(255, 255, 255, 0.08)" },
-    glassGradient: { value: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), transparent, rgba(255, 255, 255, 0.05))" },
-    botPreviewGradient: { value: "linear-gradient(135deg, transparent 0%, rgba(15, 21, 35, 0.2) 50%, transparent 100%)" },
-    botPreviewShadow: { value: "inset 0 0 20px rgba(144, 255, 0, 0.05)" },
-    errorBg: { value: "rgba(254, 178, 178, 0.16)" },
-    errorBorderColor: { value: "red.500" }
-  },
+  loginCardBgBase: { value: "#0c111b" },
+  loginHeaderBgBase: { value: "#0f1523" },
+  loginBotPreviewBgBase: { value: "#0f1523" },
+  loginBotIconGradientStartBase: { value: "#0c111b" },
+  loginBotIconGradientEndBase: { value: "#0f1523" },
+  loginBorderColorBase: { value: "rgba(255, 255, 255, 0.08)" },
+  loginGlassGradientBase: { value: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), transparent, rgba(255, 255, 255, 0.05))" },
+  loginBotPreviewGradientBase: { value: "linear-gradient(135deg, transparent 0%, rgba(15, 21, 35, 0.2) 50%, transparent 100%)" },
+  loginBotPreviewShadowBase: { value: "inset 0 0 20px rgba(144, 255, 0, 0.05)" },
+  loginErrorBgBase: { value: "rgba(254, 178, 178, 0.16)" },
+  loginErrorBorderColorBase: { value: "red.500" },
 
   // Dashboard Layout
-  dashboardLayout: {
-    elevatedBg: { value: "rgba(16, 23, 34, 0.98)" },
-    borderColor: { value: "#0c111b" }
-  },
+  dashboardLayoutElevatedBgBase: { value: "rgba(16, 23, 34, 0.98)" },
+  dashboardLayoutBorderColorBase: { value: "#0c111b" },
 
   // Backgrounds
-  backgrounds: {
-    main: { value: "#111822" },
-    mainGradients: {
-      gradient1: { value: "rgba(27, 37, 52, 0.7)" },
-      gradient2: { value: "rgba(39, 55, 77, 0.6)" },
-      gradient3: { value: "rgba(33, 45, 65, 0.5)" },
-      gradient4: { value: "rgba(27, 37, 52, 0.6)" }
-    }
-  },
+  backgroundsMainBase: { value: "#111822" },
+  backgroundsGradient1Base: { value: "rgba(27, 37, 52, 0.7)" },
+  backgroundsGradient2Base: { value: "rgba(39, 55, 77, 0.6)" },
+  backgroundsGradient3Base: { value: "rgba(33, 45, 65, 0.5)" },
+  backgroundsGradient4Base: { value: "rgba(27, 37, 52, 0.6)" },
 
   // Shadows
-  shadows: {
-    elevated: { value: "0 20px 25px -5px rgba(0,0,0,0.4), 0 10px 10px -5px rgba(0,0,0,0.3)" },
-    inset: { value: "inset 0 0 15px rgba(0,0,0,0.2)" },
-    loginCard: { value: "0 30px 60px -10px rgba(0,0,0,0.5), 0 18px 36px -18px rgba(0,0,0,0.4)" },
-    overlay: { value: "rgba(0,0,0,0.3)" }
-  }
+  shadowElevatedBase: { value: "0 20px 25px -5px rgba(0,0,0,0.4), 0 10px 10px -5px rgba(0,0,0,0.3)" },
+  shadowInsetBase: { value: "inset 0 0 15px rgba(0,0,0,0.2)" },
+  shadowLoginCardBase: { value: "0 30px 60px -10px rgba(0,0,0,0.5), 0 18px 36px -18px rgba(0,0,0,0.4)" },
+  shadowOverlayBase: { value: "rgba(0,0,0,0.3)" },
+
+  // DataTable Basis-Tokens
+  tableRowLightBase: { value: "#FDFDFD" },
+  tableRowBorderLightBase: { value: "#EFEFEF" },
+  tableIconLightBase: { value: "#555555" },
+  tableRowHoverBgBase: { value: "#151A26" },
+  tableRowHoverTextBase: { value: "#FFFFFF" },
+  tableLabelHoverBase: { value: "#FFFFFF" },
+  tableIconHoverBase: { value: "#90FF00" },
+  tableRowHoverIconBase: { value: "#FFFFFF" },
+  tableRowActiveBgBase: { value: "#151A26" },
+  tableRowActiveBorderBase: { value: "#90FF00" },
+  tableRowActiveTextBase: { value: "#FFFFFF" },
+  tableLabelLightBase: { value: "#000000" },
+  tableContentLightBase: { value: "#000000" },
+
+  // DataTable Dark Mode Basis-Tokens
+  tableRowDarkBase: { value: "#262B37" },
+  tableRowBorderDarkBase: { value: "#262B37" },
+  tableIconDarkBase: { value: "#AAAAAA" },
+  tableRowHoverBgDarkBase: { value: "#373C43" },
+  tableRowHoverTextDarkBase: { value: "#FFFFFF" },
+  tableLabelHoverDarkBase: { value: "#FFFFFF" },
+  tableIconHoverDarkBase: { value: "#90FF00" },
+  tableRowHoverIconDarkBase: { value: "#FFFFFF" },
+  tableRowActiveBgDarkBase: { value: "#2A3349" },
+  tableRowActiveBorderDarkBase: { value: "#90FF00" },
+  tableRowActiveTextDarkBase: { value: "#FFFFFF" },
+  tableLabelDarkBase: { value: "#FFFFFF" },
+  tableContentDarkBase: { value: "#FFFFFF" },
+
+  // DataTable Schriftgrößen und -gewichte
+  tableLabelFontSizeBase: { value: "0.7em" },
+  tableLabelFontWeightBase: { value: "normal" },
+  tableContentFontSizeBase: { value: "0.9em" },
+  tableContentFontWeightBase: { value: "300" },
+
+  // Scrollbar Basis-Tokens
+  scrollbarThumbBgBase: { value: "rgba(255, 255, 255, 0.2)" },
+  scrollbarThumbHoverBgBase: { value: "rgba(255, 255, 255, 0.3)" },
+
+  // Card Shadow Basis-Tokens
+  cardShadowBase: { value: "0 12px 28px -6px rgba(0,0,0,0.35), 0 8px 12px -8px rgba(0,0,0,0.25)" },
+  cardHoverShadowBase: { value: "0 15px 35px -6px rgba(0,0,0,0.4), 0 10px 15px -8px rgba(0,0,0,0.3)" }
 };
 
 const semanticTokens = defineSemanticTokens({
@@ -174,7 +208,7 @@ const semanticTokens = defineSemanticTokens({
     border: { value: { base: "{colors.gray.200}", _dark: "{colors.dark.700}" } },
     "border.subtle": { value: { base: "{colors.gray.100}", _dark: "{colors.dark.800}" } },
 
-    // Navigation Tokens mit korrekten Referenzen auf umbenannte Basis-Tokens
+    // Navigation Tokens mit korrekten Referenzen auf Basis-Tokens
     nav: {
       bg: { value: { base: "{colors.navBgBase}", _dark: "{colors.navBgBase}" } }, // Weiß bleibt weiß
       activeGreen: { value: { base: "{colors.navActiveGreenBase}", _dark: "{colors.navActiveGreenBase}" } },
@@ -187,86 +221,165 @@ const semanticTokens = defineSemanticTokens({
     // Filter-Komponenten
     button: {
       filter: {
-        bg: { value: { base: "{colors.filter.bg}", _dark: "{colors.filter.bg}" } },
-        hoverBg: { value: { base: "{colors.filter.hoverBg}", _dark: "{colors.filter.hoverBg}" } },
-        activeBg: { value: { base: "{colors.filter.activeBg}", _dark: "{colors.filter.activeBg}" } },
-        iconCircleBg: { value: { base: "{colors.filter.iconCircleBg}", _dark: "{colors.filter.iconCircleBg}" } },
-        iconColor: { value: { base: "white", _dark: "white" } },
+        bg: { value: { base: "{colors.filterBgBase}", _dark: "{colors.filterBgBase}" } },
+        hoverBg: { value: { base: "{colors.filterHoverBgBase}", _dark: "{colors.filterHoverBgBase}" } },
+        activeBg: { value: { base: "{colors.filterActiveBgBase}", _dark: "{colors.filterActiveBgBase}" } },
+        iconCircleBg: { value: { base: "{colors.filterIconCircleBgBase}", _dark: "{colors.filterIconCircleBgBase}" } },
+        iconColor: { value: { base: "{colors.whiteBase}", _dark: "{colors.whiteBase}" } },
         textColor: { value: { base: "{colors.gray.300}", _dark: "{colors.gray.300}" } }
       },
       notch: {
-        activeBg: { value: { base: "{colors.notchButton.activeBg}", _dark: "{colors.notchButton.activeBg}" } },
-        inactiveBg: { value: { base: "{colors.notchButton.inactiveBg}", _dark: "{colors.notchButton.inactiveBg}" } },
-        activeColor: { value: { base: "{colors.notchButton.activeColor}", _dark: "{colors.notchButton.activeColor}" } },
-        inactiveColor: { value: { base: "{colors.notchButton.inactiveColor}", _dark: "{colors.notchButton.inactiveColor}" } },
-        badgeBgActive: { value: { base: "{colors.notchButton.badgeBgActive}", _dark: "{colors.notchButton.badgeBgActive}" } },
-        badgeColorActive: { value: { base: "{colors.notchButton.badgeColorActive}", _dark: "{colors.notchButton.badgeColorActive}" } },
-        badgeBgInactive: { value: { base: "{colors.notchButton.badgeBgInactive}", _dark: "{colors.notchButton.badgeBgInactive}" } },
-        badgeColorInactive: { value: { base: "{colors.notchButton.badgeColorInactive}", _dark: "{colors.notchButton.badgeColorInactive}" } },
-        dotColor: { value: { base: "{colors.notchButton.dotColor}", _dark: "{colors.notchButton.dotColor}" } }
+        activeBg: { value: { base: "{colors.notchButtonActiveBgBase}", _dark: "{colors.notchButtonActiveBgBase}" } },
+        inactiveBg: { value: { base: "{colors.notchButtonInactiveBgBase}", _dark: "{colors.notchButtonInactiveBgBase}" } },
+        activeColor: { value: { base: "{colors.notchButtonActiveColorBase}", _dark: "{colors.notchButtonActiveColorBase}" } },
+        inactiveColor: { value: { base: "{colors.notchButtonInactiveColorBase}", _dark: "{colors.notchButtonInactiveColorBase}" } },
+        badgeBgActive: { value: { base: "{colors.notchButtonBadgeBgActiveBase}", _dark: "{colors.notchButtonBadgeBgActiveBase}" } },
+        badgeColorActive: { value: { base: "{colors.notchButtonBadgeColorActiveBase}", _dark: "{colors.notchButtonBadgeColorActiveBase}" } },
+        badgeBgInactive: { value: { base: "{colors.notchButtonBadgeBgInactiveBase}", _dark: "{colors.notchButtonBadgeBgInactiveBase}" } },
+        badgeColorInactive: { value: { base: "{colors.notchButtonBadgeColorInactiveBase}", _dark: "{colors.notchButtonBadgeColorInactiveBase}" } },
+        dotColor: { value: { base: "{colors.notchButtonDotColorBase}", _dark: "{colors.notchButtonDotColorBase}" } },
+        // Hover-Zustände
+        inactiveHoverBg: { value: { base: "{colors.whiteAlpha10Base}", _dark: "{colors.whiteAlpha10Base}" } },
+        inactiveHoverColor: { value: { base: "{colors.whiteBase}", _dark: "{colors.whiteBase}" } }
+      },
+      // Modal-Buttons
+      modalPrimary: {
+        bg: { value: { base: "{colors.navActiveGreenBase}", _dark: "{colors.navActiveGreenBase}" } },
+        color: { value: { base: "{colors.blackBase}", _dark: "{colors.blackBase}" } },
+        hoverBg: { value: { base: "#7FE000", _dark: "#7FE000" } },
+        activeBg: { value: { base: "#70D000", _dark: "#70D000" } }
+      },
+      modalSecondary: {
+        bg: { value: { base: "transparent", _dark: "transparent" } },
+        color: { value: { base: "{colors.whiteBase}", _dark: "{colors.whiteBase}" } },
+        borderColor: { value: { base: "{colors.whiteAlpha10Base}", _dark: "{colors.whiteAlpha10Base}" } },
+        hoverBg: { value: { base: "{colors.whiteAlpha10Base}", _dark: "{colors.whiteAlpha10Base}" } },
+        activeBg: { value: { base: "{colors.whiteAlpha10Base}", _dark: "{colors.whiteAlpha10Base}" } }
       }
     },
 
     // ContentBox und NotchedBox
     card: {
-      background: { value: { base: "{colors.contentBg}", _dark: "{colors.contentBg}" } },
-      backgroundDark: { value: { base: "{colors.contentBox.darkBg}", _dark: "{colors.contentBox.darkBg}" } },
-      backgroundLight: { value: { base: "{colors.contentBox.lightBg}", _dark: "{colors.contentBox.lightBg}" } },
+      background: { value: { base: "{colors.contentBgBase}", _dark: "{colors.contentBgBase}" } },
+      backgroundDark: { value: { base: "{colors.contentBoxDarkBgBase}", _dark: "{colors.contentBoxDarkBgBase}" } },
+      backgroundLight: { value: { base: "{colors.contentBoxLightBgBase}", _dark: "{colors.contentBoxLightBgBase}" } },
       textColor: { value: { base: "{colors.dark.900}", _dark: "{colors.dark.900}" } },
       mutedTextColor: { value: { base: "{colors.gray.600}", _dark: "{colors.gray.600}" } }
     },
 
     // Dashboard
     page: {
-      background: { value: { base: "{colors.dashboardBg}", _dark: "{colors.dashboardBg}" } }
+      background: { value: { base: "{colors.dashboardBgBase}", _dark: "{colors.dashboardBgBase}" } }
     },
 
     // Login
     login: {
       card: {
-        background: { value: { base: "{colors.login.cardBg}", _dark: "{colors.login.cardBg}" } },
-        border: { value: { base: "{colors.login.borderColor}", _dark: "{colors.login.borderColor}" } },
-        glassGradient: { value: { base: "{colors.login.glassGradient}", _dark: "{colors.login.glassGradient}" } }
+        background: { value: { base: "{colors.loginCardBgBase}", _dark: "{colors.loginCardBgBase}" } },
+        border: { value: { base: "{colors.loginBorderColorBase}", _dark: "{colors.loginBorderColorBase}" } },
+        glassGradient: { value: { base: "{colors.loginGlassGradientBase}", _dark: "{colors.loginGlassGradientBase}" } }
       },
       header: {
-        background: { value: { base: "{colors.login.headerBg}", _dark: "{colors.login.headerBg}" } }
+        background: { value: { base: "{colors.loginHeaderBgBase}", _dark: "{colors.loginHeaderBgBase}" } }
       },
       botPreview: {
-        background: { value: { base: "{colors.login.botPreviewBg}", _dark: "{colors.login.botPreviewBg}" } },
-        gradient: { value: { base: "{colors.login.botPreviewGradient}", _dark: "{colors.login.botPreviewGradient}" } },
-        shadow: { value: { base: "{colors.login.botPreviewShadow}", _dark: "{colors.login.botPreviewShadow}" } },
-        iconGradient: { value: { base: "linear-gradient(to-br, {colors.login.botIconGradientStart}, {colors.login.botIconGradientEnd})", _dark: "linear-gradient(to-br, {colors.login.botIconGradientStart}, {colors.login.botIconGradientEnd})" } }
+        background: { value: { base: "{colors.loginBotPreviewBgBase}", _dark: "{colors.loginBotPreviewBgBase}" } },
+        gradient: { value: { base: "{colors.loginBotPreviewGradientBase}", _dark: "{colors.loginBotPreviewGradientBase}" } },
+        shadow: { value: { base: "{colors.loginBotPreviewShadowBase}", _dark: "{colors.loginBotPreviewShadowBase}" } },
+        iconGradient: { value: { base: "linear-gradient(to-br, {colors.loginBotIconGradientStartBase}, {colors.loginBotIconGradientEndBase})", _dark: "linear-gradient(to-br, {colors.loginBotIconGradientStartBase}, {colors.loginBotIconGradientEndBase})" } }
       },
       error: {
-        background: { value: { base: "{colors.login.errorBg}", _dark: "{colors.login.errorBg}" } },
-        borderColor: { value: { base: "{colors.login.errorBorderColor}", _dark: "{colors.login.errorBorderColor}" } }
+        background: { value: { base: "{colors.loginErrorBgBase}", _dark: "{colors.loginErrorBgBase}" } },
+        borderColor: { value: { base: "{colors.loginErrorBorderColorBase}", _dark: "{colors.loginErrorBorderColorBase}" } }
       }
     },
 
     // Dashboard Layout
     dashboardLayout: {
-      elevatedBackground: { value: { base: "{colors.dashboardLayout.elevatedBg}", _dark: "{colors.dashboardLayout.elevatedBg}" } },
-      borderColor: { value: { base: "{colors.dashboardLayout.borderColor}", _dark: "{colors.dashboardLayout.borderColor}" } }
+      elevatedBackground: { value: { base: "{colors.dashboardLayoutElevatedBgBase}", _dark: "{colors.dashboardLayoutElevatedBgBase}" } },
+      borderColor: { value: { base: "{colors.dashboardLayoutBorderColorBase}", _dark: "{colors.dashboardLayoutBorderColorBase}" } }
     },
 
     // Backgrounds
     backgrounds: {
-      main: { value: { base: "{colors.backgrounds.main}", _dark: "{colors.backgrounds.main}" } },
-      gradient1: { value: { base: "{colors.backgrounds.mainGradients.gradient1}", _dark: "{colors.backgrounds.mainGradients.gradient1}" } },
-      gradient2: { value: { base: "{colors.backgrounds.mainGradients.gradient2}", _dark: "{colors.backgrounds.mainGradients.gradient2}" } },
-      gradient3: { value: { base: "{colors.backgrounds.mainGradients.gradient3}", _dark: "{colors.backgrounds.mainGradients.gradient3}" } },
-      gradient4: { value: { base: "{colors.backgrounds.mainGradients.gradient4}", _dark: "{colors.backgrounds.mainGradients.gradient4}" } }
+      main: { value: { base: "{colors.backgroundsMainBase}", _dark: "{colors.backgroundsMainBase}" } },
+      gradient1: { value: { base: "{colors.backgroundsGradient1Base}", _dark: "{colors.backgroundsGradient1Base}" } },
+      gradient2: { value: { base: "{colors.backgroundsGradient2Base}", _dark: "{colors.backgroundsGradient2Base}" } },
+      gradient3: { value: { base: "{colors.backgroundsGradient3Base}", _dark: "{colors.backgroundsGradient3Base}" } },
+      gradient4: { value: { base: "{colors.backgroundsGradient4Base}", _dark: "{colors.backgroundsGradient4Base}" } }
+    },
+
+    // Table Tokens
+    table: {
+      // Normale Zustände
+      rowBg: { value: { base: "{colors.tableRowLightBase}", _dark: "{colors.tableRowDarkBase}" } },
+      rowBorderColor: { value: { base: "{colors.tableRowBorderLightBase}", _dark: "{colors.tableRowBorderDarkBase}" } },
+      rowTextColor: { value: { base: "{colors.blackBase}", _dark: "{colors.whiteBase}" } }, // Explizite Textfarbe für Zeilen
+      iconColor: { value: { base: "{colors.tableIconLightBase}", _dark: "{colors.tableIconDarkBase}" } },
+      labelColor: { value: { base: "{colors.tableLabelLightBase}", _dark: "{colors.tableLabelDarkBase}" } },
+      contentColor: { value: { base: "{colors.tableContentLightBase}", _dark: "{colors.tableContentDarkBase}" } },
+
+      // Hover-Zustände
+      rowHoverBg: { value: { base: "{colors.tableRowHoverBgBase}", _dark: "{colors.tableRowHoverBgDarkBase}" } },
+      rowHoverTextColor: { value: { base: "{colors.tableRowHoverTextBase}", _dark: "{colors.tableRowHoverTextDarkBase}" } },
+      labelHoverColor: { value: { base: "{colors.tableLabelHoverBase}", _dark: "{colors.tableLabelHoverDarkBase}" } },
+      iconHoverColor: { value: { base: "{colors.tableIconHoverBase}", _dark: "{colors.tableIconHoverDarkBase}" } },
+      rowHoverIconColor: { value: { base: "{colors.tableRowHoverIconBase}", _dark: "{colors.tableRowHoverIconDarkBase}" } },
+
+      // Aktive Zustände
+      rowActiveColor: { value: { base: "{colors.tableRowActiveBgBase}", _dark: "{colors.tableRowActiveBgDarkBase}" } },
+      rowActiveBorderColor: { value: { base: "{colors.tableRowActiveBorderBase}", _dark: "{colors.tableRowActiveBorderDarkBase}" } },
+      rowActiveTextColor: { value: { base: "{colors.tableRowActiveTextBase}", _dark: "{colors.tableRowActiveTextDarkBase}" } },
+
+      // Schriftgrößen und -gewichte
+      labelFontSize: { value: { base: "{colors.tableLabelFontSizeBase}", _dark: "{colors.tableLabelFontSizeBase}" } },
+      labelFontWeight: { value: { base: "{colors.tableLabelFontWeightBase}", _dark: "{colors.tableLabelFontWeightBase}" } },
+      contentFontSize: { value: { base: "{colors.tableContentFontSizeBase}", _dark: "{colors.tableContentFontSizeBase}" } },
+      contentFontWeight: { value: { base: "{colors.tableContentFontWeightBase}", _dark: "{colors.tableContentFontWeightBase}" } }
+    },
+
+    // Scrollbar Tokens
+    scrollbar: {
+      thumb: {
+        bg: { value: { base: "{colors.scrollbarThumbBgBase}", _dark: "{colors.scrollbarThumbBgBase}" } },
+        hoverBg: { value: { base: "{colors.scrollbarThumbHoverBgBase}", _dark: "{colors.scrollbarThumbHoverBgBase}" } }
+      }
+    },
+
+    // Status Tokens
+    status: {
+      success: { value: { base: "{colors.green.500}", _dark: "{colors.green.500}" } },
+      error: { value: { base: "{colors.red.500}", _dark: "{colors.red.500}" } }
+    },
+
+    // Zone Tokens
+    zone: {
+      pointsText: { value: { base: "{colors.navActiveGreenBase}", _dark: "{colors.navActiveGreenBase}" } }
+    },
+
+    // Menu Tokens
+    menu: {
+      item: {
+        dangerHoverBg: { value: { base: "{colors.redAlpha10Base}", _dark: "{colors.redAlpha10Base}" } },
+        dangerHoverColor: { value: { base: "{colors.red.300}", _dark: "{colors.red.300}" } },
+        hoverBg: { value: { base: "{colors.whiteAlpha10Base}", _dark: "{colors.whiteAlpha10Base}" } }
+      }
+    },
+
+    // Popover Tokens
+    popover: {
+      bg: { value: { base: "{colors.dark.900}", _dark: "{colors.dark.900}" } }
     }
   },
 
   // Schatten
   shadows: {
-    card: { value: { base: "0 12px 28px -6px rgba(0,0,0,0.35), 0 8px 12px -8px rgba(0,0,0,0.25)", _dark: "0 12px 28px -6px rgba(0,0,0,0.35), 0 8px 12px -8px rgba(0,0,0,0.25)" } },
-    cardHover: { value: { base: "0 15px 35px -6px rgba(0,0,0,0.4), 0 10px 15px -8px rgba(0,0,0,0.3)", _dark: "0 15px 35px -6px rgba(0,0,0,0.4), 0 10px 15px -8px rgba(0,0,0,0.3)" } },
-    elevated: { value: { base: "{colors.shadows.elevated}", _dark: "{colors.shadows.elevated}" } },
-    inset: { value: { base: "{colors.shadows.inset}", _dark: "{colors.shadows.inset}" } },
-    loginCard: { value: { base: "{colors.shadows.loginCard}", _dark: "{colors.shadows.loginCard}" } },
-    overlay: { value: { base: "{colors.shadows.overlay}", _dark: "{colors.shadows.overlay}" } }
+    card: { value: { base: "{colors.cardShadowBase}", _dark: "{colors.cardShadowBase}" } },
+    cardHover: { value: { base: "{colors.cardHoverShadowBase}", _dark: "{colors.cardHoverShadowBase}" } },
+    elevated: { value: { base: "{colors.shadowElevatedBase}", _dark: "{colors.shadowElevatedBase}" } },
+    inset: { value: { base: "{colors.shadowInsetBase}", _dark: "{colors.shadowInsetBase}" } },
+    loginCard: { value: { base: "{colors.shadowLoginCardBase}", _dark: "{colors.shadowLoginCardBase}" } },
+    overlay: { value: { base: "{colors.shadowOverlayBase}", _dark: "{colors.shadowOverlayBase}" } }
   }
 });
 

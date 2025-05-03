@@ -1,63 +1,42 @@
 /* DataTable.css */
-.data-table-row:hover {
-  background-color: var(--row-hover-bg-color) !important;
-  color: var(--row-hover-text-color) !important;
-}
-
 .data-table-row:hover .label-text {
-  color: var(--label-hover-color) !important;
+  color: white !important;
 }
 
 .data-table-row:hover .content-text {
-  color: var(--row-hover-text-color) !important;
+  color: white !important;
 }
 
-.data-table-row[data-active="true"] {
-  background-color: var(--row-active-color) !important;
-  color: var(--row-active-text-color) !important;
-}
-
-.data-table-row[data-active="true"] .label-text {
-  color: var(--row-active-text-color) !important;
-}
-
+.data-table-row[data-active="true"] .label-text,
 .data-table-row[data-active="true"] .content-text {
-  color: var(--row-active-text-color) !important;
+  color: white !important;
 }
 
-/* Icon-Stile */
 .data-table-icon {
-  color: var(--icon-color) !important; /* Fallback for non-SVG elements */
-  fill: var(--icon-color) !important;
-  stroke: var(--icon-color) !important;
   cursor: pointer;
-  transition: color 0.2s ease, fill 0.2s ease, stroke 0.2s ease; /* Add fill/stroke to transition */
+  transition: color 0.2s ease, fill 0.2s ease, stroke 0.2s ease;
 }
 
-/* Wenn über das Icon selbst gehovert wird */
 .data-table-icon:hover {
-  color: var(--icon-hover-color) !important; /* Fallback for non-SVG elements */
-  fill: var(--icon-hover-color) !important;
-  stroke: var(--icon-hover-color) !important;
+  color: #90FF00 !important;
+  fill: #90FF00 !important;
+  stroke: #90FF00 !important;
 }
 
-/* Wenn über die Zeile gehovert wird, aber nicht über das Icon selbst */
 .data-table-row:hover .data-table-icon {
-  color: var(--row-hover-icon-color) !important; /* Fallback for non-SVG elements */
-  fill: var(--row-hover-icon-color) !important;
-  stroke: var(--row-hover-icon-color) !important;
+  color: white;
+  fill: white;
+  stroke: white;
 }
 
-/* Wenn über die Zeile UND über das Icon gehovert wird (hat Vorrang) */
 .data-table-row:hover .data-table-icon:hover {
-  color: var(--icon-hover-color) !important; /* Fallback for non-SVG elements */
-  fill: var(--icon-hover-color) !important;
-  stroke: var(--icon-hover-color) !important;
+  color: #90FF00 !important;
+  fill: #90FF00 !important;
+  stroke: #90FF00 !important;
 }
 
-/* Aktive Zeile Icons */
 .data-table-row[data-active="true"] .data-table-icon {
-  color: var(--row-active-text-color) !important; /* Fallback for non-SVG elements */
-  fill: var(--row-active-text-color) !important;
-  stroke: var(--row-active-text-color) !important;
+  color: white;
+  fill: white;
+  stroke: white;
 }
