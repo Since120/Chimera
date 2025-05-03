@@ -53,8 +53,18 @@ export default function CategoriesPage() {
     // Wenn das Zonen-Modal geöffnet ist, keine Aktion ausführen
     if (isZoneModalOpen) return;
 
-    // Prüfen, ob das Klick-Event von einem Element stammt, das nicht zur Kategorie- oder Zonen-Tabelle gehört
     const target = e.target as HTMLElement;
+
+    // Prüfen, ob der Klick auf einen Button erfolgt ist
+    const isAnyButton = target.closest('button') !== null;
+
+    // Wenn auf einen Button geklickt wurde, keine Aktion ausführen
+    // Dies verhindert, dass die Zonentabelle geschlossen wird, wenn auf irgendeinen Button geklickt wird
+    if (isAnyButton) {
+      return;
+    }
+
+    // Prüfen, ob das Klick-Event von einem Element stammt, das nicht zur Kategorie- oder Zonen-Tabelle gehört
     if (!target.closest('.kategorie-tabelle') && !target.closest('.zonen-tabelle')) {
       setSelectedKategorie(null);
     }
@@ -508,19 +518,20 @@ export default function CategoriesPage() {
                         display="flex"
                         alignItems="center"
                         justifyContent="center"
-                        gap={2}
+                        gap={1.5}
                         bg="#90FF00" // Grün wie der aktive Button in der Notch-Bar
                         color="black" // Schwarzer Text auf grünem Hintergrund
-                        px={3}
-                        py={2}
+                        px={2}
+                        py={1}
                         borderRadius="full"
-                        fontSize="sm"
+                        fontSize="xs"
                         fontWeight="medium"
                         _hover={{ bg: "#7FE000" }} // Etwas dunkleres Grün beim Hovern
                         transition="all 0.2s"
                         cursor="pointer" // Mauszeiger wird zum Pointer
+                        h="28px" // Explizite Höhe für konsistente Größe
                       >
-                        <FiPlus size={14} />
+                        <FiPlus size={12} />
                         <Text>Zone erstellen</Text>
                       </Box>
                     </Box>

@@ -16,8 +16,20 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
     return (
       <ChakraSwitch.Root ref={rootRef} {...rest}>
         <ChakraSwitch.HiddenInput ref={ref} {...inputProps} />
-        <ChakraSwitch.Control>
-          <ChakraSwitch.Thumb>
+        <ChakraSwitch.Control
+          // Angepasste Styles für den Track (Schlitz)
+          bg="switch.track.bg"
+          _checked={{
+            bg: "switch.track.activeBg"
+          }}
+        >
+          <ChakraSwitch.Thumb
+            // Angepasste Styles für den Thumb (Knopf)
+            bg="switch.thumb.bg"
+            _checked={{
+              bg: "switch.thumb.activeBg"
+            }}
+          >
             {thumbLabel && (
               <ChakraSwitch.ThumbIndicator fallback={thumbLabel?.off}>
                 {thumbLabel?.on}

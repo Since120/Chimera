@@ -93,40 +93,69 @@ export const CategoryForm = ({
           label="Rollen"
           helperText="Wählen Sie Rollen aus, die Zugriff auf diese Kategorie haben."
         >
-          <Box>
-            <Box position="relative">
-              <select
-                multiple
-                value={selectedRoles}
-                onChange={(e) => {
-                  const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                  setSelectedRoles(selectedOptions);
-                  setFormData((prev) => ({ ...prev, roles: selectedOptions.join(',') }));
-                }}
-                style={{
-                  height: "120px",
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "12px",
-                  border: "none",
-                  backgroundColor: "var(--chakra-colors-button-filter-bg)",
-                  color: "var(--chakra-colors-button-filter-textColor)",
-                  boxShadow: "var(--chakra-shadows-card)",
-                  backdropFilter: "blur(5px)"
-                }}
-              >
-                <option value="Admin">Admin</option>
-                <option value="Moderator">Moderator</option>
-                <option value="User">User</option>
-                <option value="Guest">Guest</option>
-              </select>
+          <Box w="full">
+            <Box
+              position="relative"
+              w="full"
+              h="120px"
+              p="8px"
+              borderRadius="12px"
+              border="none"
+              bg="button.filter.bg"
+              color="button.filter.textColor"
+              boxShadow="card"
+              backdropFilter="blur(5px)"
+              overflowY="auto"
+              className="custom-scrollbar"
+            >
+              {/* Klickbare Rollenoptionen */}
+              {[
+                "Admin",
+                "Moderator",
+                "User",
+                "Guest",
+                "Developer",
+                "Support",
+                "ContentCreator",
+                "Subscriber",
+                "VIP",
+                "Tester",
+                "Analyst",
+                "Manager",
+                "Owner",
+                "Bot"
+              ].map((role) => (
+                <Box
+                  key={role}
+                  p={2}
+                  mb={1}
+                  borderRadius="md"
+                  cursor="pointer"
+                  bg={selectedRoles.includes(role) ? "button.filter.activeBg" : "transparent"}
+                  color={selectedRoles.includes(role) ? "button.filter.activeColor" : "inherit"}
+                  _hover={{
+                    bg: selectedRoles.includes(role) ? "button.filter.activeBg" : "button.filter.hoverBg"
+                  }}
+                  onClick={() => {
+                    // Toggle Rolle in der Auswahl
+                    const newRoles = selectedRoles.includes(role)
+                      ? selectedRoles.filter(r => r !== role)
+                      : [...selectedRoles, role];
+
+                    setSelectedRoles(newRoles);
+                    setFormData((prev) => ({ ...prev, roles: newRoles.join(',') }));
+                  }}
+                >
+                  {role}
+                </Box>
+              ))}
             </Box>
-            <Flex wrap="wrap" gap={1} mt={1}>
+            <Flex wrap="wrap" gap={1} mt={1} w="full">
               {selectedRoles.map((role) => (
                 <Box
                   key={role}
-                  bg="button.modalPrimary.bg"
-                  color="button.modalPrimary.color"
+                  bg="button.roleChip.bg"
+                  color="button.roleChip.color"
                   px={2}
                   py={0.5}
                   borderRadius="full"
@@ -144,6 +173,8 @@ export const CategoryForm = ({
                     size="xs"
                     ml={0.5}
                     boxSize="14px"
+                    cursor="pointer"
+                    _hover={{ bg: "transparent" }}
                     onClick={() => {
                       const newRoles = selectedRoles.filter((r) => r !== role);
                       setSelectedRoles(newRoles);

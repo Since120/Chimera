@@ -93,6 +93,9 @@ const colors = {
   whiteAlpha10Base: { value: "rgba(255,255,255,0.1)" },
   redAlpha10Base: { value: "rgba(239, 68, 68, 0.1)" },
 
+  // Abgeschwächte Versionen der Hauptfarben
+  navActiveGreenMutedBase: { value: "rgba(144, 255, 0, 0.7)" },
+
   // Filter-Komponenten
   filterBgBase: { value: "#151A26" },
   filterHoverBgBase: { value: "#1D2433" },
@@ -249,6 +252,11 @@ const semanticTokens = defineSemanticTokens({
         hoverBg: { value: { base: "#7FE000", _dark: "#7FE000" } },
         activeBg: { value: { base: "#70D000", _dark: "#70D000" } }
       },
+      // Rollenauswahl-Chips
+      roleChip: {
+        bg: { value: { base: "{colors.navActiveGreenMutedBase}", _dark: "{colors.navActiveGreenMutedBase}" } },
+        color: { value: { base: "{colors.blackBase}", _dark: "{colors.blackBase}" } }
+      },
       modalSecondary: {
         bg: { value: { base: "transparent", _dark: "transparent" } },
         color: { value: { base: "{colors.whiteBase}", _dark: "{colors.whiteBase}" } },
@@ -363,6 +371,18 @@ const semanticTokens = defineSemanticTokens({
         dangerHoverBg: { value: { base: "{colors.redAlpha10Base}", _dark: "{colors.redAlpha10Base}" } },
         dangerHoverColor: { value: { base: "{colors.red.300}", _dark: "{colors.red.300}" } },
         hoverBg: { value: { base: "{colors.whiteAlpha10Base}", _dark: "{colors.whiteAlpha10Base}" } }
+      }
+    },
+
+    // Switch Tokens
+    switch: {
+      track: {
+        bg: { value: { base: "{colors.dark.700}", _dark: "{colors.dark.700}" } },
+        activeBg: { value: { base: "{colors.dark.600}", _dark: "{colors.dark.600}" } }
+      },
+      thumb: {
+        bg: { value: { base: "{colors.gray.300}", _dark: "{colors.gray.300}" } },
+        activeBg: { value: { base: "{colors.navActiveGreenBase}", _dark: "{colors.navActiveGreenBase}" } }
       }
     },
 
