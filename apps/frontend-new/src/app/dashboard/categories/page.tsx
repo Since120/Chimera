@@ -1,7 +1,7 @@
 // apps/frontend-new/src/app/dashboard/categories/page.tsx
 'use client';
 
-import { Box, Flex, Heading, Text } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, useDisclosure } from "@chakra-ui/react";
 import './page.css';
 import { DataTable } from "@/components/core/DataTable";
 
@@ -20,15 +20,39 @@ import { ZonenTabelle, Zone } from "@/components/zones/ZonenTabelle";
 import { CategoryForm } from "@/components/categories/CategoryForm";
 import { ZoneForm } from "@/components/zones/ZoneForm";
 
-// Daten
-import { kategorien, zonenProKategorie } from "@/data/categoriesData";
+// Hooks für Daten und Mutationen
+import { useCategories } from "@/hooks/data/useCategoriesData";
+import { useZones } from "@/hooks/data/useZonesData";
+import { useGuildRoles } from "@/hooks/data/useGuildRoles";
+import { useCreateCategory } from "@/hooks/mutations/useCreateCategory";
+import { useUpdateCategory } from "@/hooks/mutations/useUpdateCategory";
+import { useDeleteCategory } from "@/hooks/mutations/useDeleteCategory";
+import { useCreateZone } from "@/hooks/mutations/useCreateZone";
+import { useUpdateZone } from "@/hooks/mutations/useUpdateZone";
+import { useDeleteZone } from "@/hooks/mutations/useDeleteZone";
+import { useHasPermission } from "@/hooks/useHasPermission";
+import { useGuild } from "@/context/guild-context";
+import { useToast } from "@/hooks/useToast";
+import { Button } from "@chakra-ui/react";
 
-import { useState } from 'react';
+// Typen
+import { ScopeType } from "shared-types";
+import type { CreateCategoryDto, UpdateCategoryDto, CreateZoneDto, UpdateZoneDto } from "shared-types";
+import type { ExtendedCategoryDto, ExtendedZoneDto } from "@/types/categories";
+
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
 
 export default function CategoriesPage() {
+  // Hooks für Daten und Berechtigungen
+  const { selectedGuild } = useGuild();
+  const toast = useToast();
+  const hasCreatePermission = useHasPermission('category:create');
+  const hasUpdatePermission = useHasPermission('category:update');
+  const hasDeletePermission = useHasPermission('category:delete');
+
   // States für den Vollbildmodus der verschiedenen Komponenten
   const [isContentBox1Fullscreen, setIsContentBox1Fullscreen] = useState(false);
   const [isContentBox2Fullscreen, setIsContentBox2Fullscreen] = useState(false);
@@ -36,12 +60,178 @@ export default function CategoriesPage() {
 
   // State für die ausgewählte Kategorie
   const [selectedKategorie, setSelectedKategorie] = useState<Kategorie | null>(null);
+  const [selectedCategoryDto, setSelectedCategoryDto] = useState<ExtendedCategoryDto | null>(null);
 
   // States für Modals
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isZoneModalOpen, setIsZoneModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Kategorie | null>(null);
+  const [editingCategoryDto, setEditingCategoryDto] = useState<ExtendedCategoryDto | null>(null);
   const [editingZone, setEditingZone] = useState<Zone | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<Kategorie | null>(null);
+  const [zoneToDelete, setZoneToDelete] = useState<Zone | null>(null);
+
+  // Daten-Hooks
+  const {
+    categories,
+    isLoading: isCategoriesLoading,
+    isError: isCategoriesError,
+    error: categoriesError
+  } = useCategories(selectedGuild?.id);
+
+  const {
+    zones,
+    isLoading: isZonesLoading,
+    isError: isZonesError,
+    error: zonesError
+  } = useZones(selectedCategoryDto?.id);
+
+  const {
+    roles,
+    isLoading: isRolesLoading
+  } = useGuildRoles(selectedGuild?.id);
+
+  // Debug-Ausgabe für die Rollen
+  useEffect(() => {
+    console.log('Geladene Discord-Rollen:', roles);
+
+    // Überprüfe, ob die Rollen korrekt geladen wurden
+    if (roles && roles.length > 0) {
+      console.log('Erste Rolle:', roles[0]);
+      console.log('Anzahl der Rollen:', roles.length);
+
+      // Detaillierte Ausgabe der Rollen-IDs und -Namen
+      console.log('Alle Rollen-IDs und Namen:', roles.map(role => ({
+        id: role.id,
+        idType: typeof role.id,
+        name: role.name
+      })));
+    } else {
+      console.warn('Keine Rollen geladen oder leeres Array');
+    }
+  }, [roles]);
+
+  // Mutation-Hooks
+  const createCategoryMutation = useCreateCategory();
+  const updateCategoryMutation = useUpdateCategory();
+  const deleteCategoryMutation = useDeleteCategory();
+  const createZoneMutation = useCreateZone();
+  const updateZoneMutation = useUpdateZone();
+  const deleteZoneMutation = useDeleteZone();
+
+  // Mapping von CategoryDto zu KategorieUI
+  const kategorien = useMemo(() => {
+    if (!categories) return [];
+
+    const result = categories.map(category => {
+      // Erstelle das Basis-Kategorie-Objekt
+      const kategorie: Kategorie = {
+        id: category.id,
+        name: category.name,
+        description: category.description || '',
+        zones: category.zones?.length || 0,
+        activeZones: category.zones?.filter(z => z.active).length || 0,
+        users: category.userCount || 0,
+        activeUsers: category.activeUserCount || 0,
+        visible: category.isVisibleDefault,
+        tracking: category.defaultTrackingEnabled,
+        setup: category.setupFlowEnabled,
+        roles: category.discordRoleIds?.join(',') || '',
+        lastAccess: category.lastAccessAt ? new Date(category.lastAccessAt).toLocaleString() : 'Nie',
+        lastUser: category.lastAccessUser || '',
+        totalTime: category.totalTimeSpent ? `${Math.floor(category.totalTimeSpent / 60)}h ${category.totalTimeSpent % 60}m` : '0h 0m'
+      };
+
+      // Wenn roles noch laden (isRolesLoading), setze rolesInfo auf undefined
+      if (isRolesLoading) {
+        kategorie.rolesInfo = undefined;
+        console.log('Rollen werden noch geladen für Kategorie:', category.name);
+      } else if (!category.discordRoleIds || category.discordRoleIds.length === 0) {
+        // Wenn keine Rollen-IDs vorhanden sind, setze rolesInfo auf null
+        console.log('Keine Rollen-IDs für Kategorie:', category.name);
+        kategorie.rolesInfo = null;
+      } else {
+        // Wenn Rollen geladen sind: Suche die entsprechenden Rollenobjekte
+        console.log('Verarbeite Kategorie:', category.name);
+        console.log('Discord Role IDs:', category.discordRoleIds);
+        console.log('Verfügbare Rollen:', roles?.map(r => ({ id: r.id, name: r.name })));
+
+        // Stelle sicher, dass discordRoleIds ein Array ist
+        const roleIds = Array.isArray(category.discordRoleIds) ? category.discordRoleIds : [];
+
+        // Suche die Rollen-Objekte für die IDs
+        kategorie.rolesInfo = roleIds
+          .map(roleId => {
+            // Stelle sicher, dass roleId ein String ist
+            const roleIdStr = String(roleId);
+
+            // Suche die Rolle mit String-Vergleich
+            const role = roles?.find(r => String(r.id) === roleIdStr);
+
+            // Debug-Ausgabe für gefundene/nicht gefundene Rolle
+            if (role) {
+              console.log('Rolle gefunden:', role.name, 'für ID:', roleIdStr);
+            } else {
+              console.warn('Keine Rolle gefunden für ID:', roleIdStr);
+            }
+
+            return role ? {
+              id: role.id,
+              name: role.name,
+              colorHex: role.colorHex
+            } : null;
+          })
+          .filter(Boolean) as Array<{id: string; name: string; colorHex?: string}>;
+
+        console.log('Kategorie', category.name, 'rolesInfo:', kategorie.rolesInfo);
+
+        // Wenn keine Rollen gefunden wurden, setze rolesInfo auf null
+        if (kategorie.rolesInfo.length === 0) {
+          kategorie.rolesInfo = null;
+        }
+      }
+
+      return kategorie;
+    });
+
+    // Debug-Ausgabe für die Kategorien und ihre Rollen
+    console.log('Kategorien mit Rollen:', result.map((k) => ({
+      id: k.id,
+      name: k.name,
+      roles: k.roles,
+      rolesInfo: k.rolesInfo
+    })));
+
+    return result;
+  }, [categories, roles, isRolesLoading]);
+
+  // Mapping von ZoneDto zu ZoneUI
+  const zonenProKategorie = useMemo(() => {
+    if (!zones || !selectedKategorie) return {};
+
+    const zonenListe = zones.map(zone => ({
+      id: zone.id,
+      name: zone.name,
+      key: zone.key,
+      points: zone.pointsPerInterval || 0,
+      minutes: zone.intervalMinutes || 0,
+      lastAccess: zone.lastAccessAt ? new Date(zone.lastAccessAt).toLocaleString() : 'Nie',
+      usageTime: zone.totalTimeSpent ? `${Math.floor(zone.totalTimeSpent / 60)}h ${zone.totalTimeSpent % 60}m` : '0h 0m'
+    }));
+
+    return { [selectedKategorie.id]: zonenListe };
+  }, [zones, selectedKategorie]);
+
+  // Effekt zum Aktualisieren des ausgewählten CategoryDto, wenn sich selectedKategorie ändert
+  useEffect(() => {
+    if (selectedKategorie && categories) {
+      const categoryDto = categories.find(c => c.id === selectedKategorie.id) || null;
+      setSelectedCategoryDto(categoryDto);
+    } else {
+      setSelectedCategoryDto(null);
+    }
+  }, [selectedKategorie, categories]);
 
   // Funktion zum Auswählen einer Kategorie
   const handleSelectKategorie = (kategorie: Kategorie | null) => {
@@ -72,12 +262,39 @@ export default function CategoriesPage() {
 
   // Handler für Kategorie-Modal
   const handleOpenCreateCategoryModal = () => {
+    if (!hasCreatePermission) {
+      toast({
+        title: "Keine Berechtigung",
+        description: "Sie haben keine Berechtigung, Kategorien zu erstellen.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+      return;
+    }
+
     setEditingCategory(null);
+    setEditingCategoryDto(null);
     setIsCategoryModalOpen(true);
   };
 
   const handleOpenEditCategoryModal = (kategorie: Kategorie) => {
+    if (!hasUpdatePermission) {
+      toast({
+        title: "Keine Berechtigung",
+        description: "Sie haben keine Berechtigung, Kategorien zu bearbeiten.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+      return;
+    }
+
     setEditingCategory(kategorie);
+    const categoryDto = categories.find(c => c.id === kategorie.id) || null;
+    setEditingCategoryDto(categoryDto);
     setIsCategoryModalOpen(true);
   };
 
@@ -86,16 +303,107 @@ export default function CategoriesPage() {
   };
 
   const handleCategoryFormSubmit = (data: Partial<Kategorie>) => {
-    console.log('Kategorie speichern:', data);
+    if (!selectedGuild) {
+      toast({
+        title: "Fehler",
+        description: "Keine Guild ausgewählt.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+      return;
+    }
+
+    if (editingCategory) {
+      // Update existing category
+      const updateData: UpdateCategoryDto = {
+        name: data.name || '',
+        discordRoleIds: data.roles ? data.roles.split(',').filter(Boolean) : [],
+        isVisibleDefault: data.visible || false,
+        defaultTrackingEnabled: data.tracking || false,
+        setupFlowEnabled: data.setup || false,
+      };
+
+      updateCategoryMutation.mutate({
+        categoryId: editingCategory.id,
+        data: updateData
+      });
+    } else {
+      // Create new category
+      const createData: CreateCategoryDto = {
+        name: data.name || '',
+        discordRoleIds: data.roles ? data.roles.split(',').filter(Boolean) : [],
+        isVisibleDefault: data.visible || false,
+        defaultTrackingEnabled: data.tracking || false,
+        setupFlowEnabled: data.setup || false,
+        scope: {
+          id: '', // Wird vom Backend generiert
+          scopeType: ScopeType.GUILD,
+          scopeId: selectedGuild.id
+        }
+      };
+
+      createCategoryMutation.mutate(createData);
+    }
+
     handleCloseCategoryModal();
+  };
+
+  // Handler für Kategorie löschen
+  const handleDeleteCategory = (kategorie: Kategorie) => {
+    if (!hasDeletePermission) {
+      toast({
+        title: "Keine Berechtigung",
+        description: "Sie haben keine Berechtigung, Kategorien zu löschen.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+      return;
+    }
+
+    setCategoryToDelete(kategorie);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteCategory = () => {
+    if (categoryToDelete) {
+      deleteCategoryMutation.mutate(categoryToDelete.id, {
+        onSuccess: () => {
+          if (selectedKategorie?.id === categoryToDelete.id) {
+            setSelectedKategorie(null);
+          }
+          toast({
+            title: 'Kategorie gelöscht',
+            description: `Die Kategorie "${categoryToDelete.name}" wurde erfolgreich gelöscht.`,
+            status: 'success',
+            duration: 5000,
+            isClosable: true,
+            position: 'top-right',
+          });
+        }
+      });
+    }
+    setIsDeleteConfirmOpen(false);
+    setCategoryToDelete(null);
   };
 
   // Handler für Zonen-Modal
   const handleOpenCreateZoneModal = () => {
     if (!selectedKategorie) {
-      console.error('Keine Kategorie ausgewählt');
+      toast({
+        title: "Fehler",
+        description: "Keine Kategorie ausgewählt.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
       return;
     }
+
     setEditingZone(null);
     setIsZoneModalOpen(true);
   };
@@ -110,8 +418,72 @@ export default function CategoriesPage() {
   };
 
   const handleZoneFormSubmit = (data: Partial<Zone>) => {
-    console.log('Zone speichern:', data);
+    if (!selectedCategoryDto) {
+      toast({
+        title: "Fehler",
+        description: "Keine Kategorie ausgewählt.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+      return;
+    }
+
+    if (editingZone) {
+      // Update existing zone
+      const updateData: UpdateZoneDto = {
+        name: data.name || '',
+        pointsPerInterval: data.points || 0,
+        intervalMinutes: data.minutes || 0
+      };
+
+      updateZoneMutation.mutate({
+        zoneId: editingZone.id,
+        data: updateData,
+        categoryId: selectedCategoryDto.id
+      });
+    } else {
+      // Create new zone
+      const createData: CreateZoneDto = {
+        name: data.name || '',
+        zoneKey: data.key || '',
+        pointsPerInterval: data.points || 0,
+        intervalMinutes: data.minutes || 0
+      };
+
+      createZoneMutation.mutate({
+        categoryId: selectedCategoryDto.id,
+        data: createData
+      });
+    }
+
     handleCloseZoneModal();
+  };
+
+  // Handler für Zone löschen
+  const handleDeleteZone = (zone: Zone) => {
+    setZoneToDelete(zone);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteZone = () => {
+    if (zoneToDelete && selectedCategoryDto) {
+      deleteZoneMutation.mutate(zoneToDelete.id, {
+        onSuccess: () => {
+          toast({
+            title: 'Zone gelöscht',
+            description: `Die Zone "${zoneToDelete.name}" wurde erfolgreich gelöscht.`,
+            status: 'success',
+            duration: 5000,
+            isClosable: true,
+            position: 'top-right',
+          });
+        }
+      });
+    }
+    setIsDeleteConfirmOpen(false);
+    setZoneToDelete(null);
   };
 
   // Funktionen zum Umschalten des Vollbildmodus
@@ -447,14 +819,32 @@ export default function CategoriesPage() {
                   className="custom-scrollbar kategorie-tabelle" // Klasse für Klick-Handler
                   transition="width 0.3s ease-in-out" // Animation für die Breitenänderung
                 >
-                  <KategorieTabelle
-                    data={kategorien}
-                    selectedKategorieId={selectedKategorie?.id || null}
-                    onSelectKategorie={handleSelectKategorie}
-                    onEdit={handleOpenEditCategoryModal}
-                    onDelete={(kategorie) => console.log('Löschen:', kategorie.name)}
-                    compactMode={selectedKategorie && zonenProKategorie[selectedKategorie.id] ? true : false}
-                  />
+                  {isCategoriesLoading ? (
+                    <Box textAlign="center" py={10}>
+                      <Text>Kategorien werden geladen...</Text>
+                    </Box>
+                  ) : isCategoriesError ? (
+                    <Box textAlign="center" py={10}>
+                      <Text color="red.500">Fehler beim Laden der Kategorien</Text>
+                    </Box>
+                  ) : kategorien.length === 0 ? (
+                    <Box textAlign="center" py={10}>
+                      <Text>Keine Kategorien gefunden</Text>
+                    </Box>
+                  ) : (
+                    <>
+                      {console.log('Rollen an KategorieTabelle übergeben:', roles)}
+                      {console.log('Kategorien an KategorieTabelle übergeben:', kategorien)}
+                      <KategorieTabelle
+                        data={kategorien}
+                        selectedKategorieId={selectedKategorie?.id || null}
+                        onSelectKategorie={handleSelectKategorie}
+                        onEdit={handleOpenEditCategoryModal}
+                        onDelete={handleDeleteCategory}
+                        compactMode={selectedKategorie && zonenProKategorie[selectedKategorie.id] ? true : false}
+                      />
+                    </>
+                  )}
                 </Box>
 
                 {/* Rechte Seite: Zonen-Tabelle (4/7 der Breite) - immer anzeigen, aber mit unterschiedlicher Sichtbarkeit */}
@@ -544,11 +934,25 @@ export default function CategoriesPage() {
                       overflow="auto" // Scrolling erlauben
                       className="custom-scrollbar"
                     >
-                      <ZonenTabelle
-                        data={selectedKategorie && zonenProKategorie[selectedKategorie.id] ? zonenProKategorie[selectedKategorie.id] : []}
-                        onEdit={handleOpenEditZoneModal}
-                        onDelete={(zone) => console.log('Löschen:', zone.name)}
-                      />
+                      {isZonesLoading ? (
+                        <Box textAlign="center" py={10}>
+                          <Text>Zonen werden geladen...</Text>
+                        </Box>
+                      ) : isZonesError ? (
+                        <Box textAlign="center" py={10}>
+                          <Text color="red.500">Fehler beim Laden der Zonen</Text>
+                        </Box>
+                      ) : selectedKategorie && zonenProKategorie[selectedKategorie.id]?.length === 0 ? (
+                        <Box textAlign="center" py={10}>
+                          <Text>Keine Zonen in dieser Kategorie</Text>
+                        </Box>
+                      ) : (
+                        <ZonenTabelle
+                          data={selectedKategorie && zonenProKategorie[selectedKategorie.id] ? zonenProKategorie[selectedKategorie.id] : []}
+                          onEdit={handleOpenEditZoneModal}
+                          onDelete={handleDeleteZone}
+                        />
+                      )}
                     </Box>
                   </Box>
                 </Box>
@@ -571,6 +975,7 @@ export default function CategoriesPage() {
           initialData={editingCategory}
           onSubmit={handleCategoryFormSubmit}
           onCancel={handleCloseCategoryModal}
+          isLoading={createCategoryMutation.isPending || updateCategoryMutation.isPending}
         />
       </Modal>
 
@@ -585,7 +990,59 @@ export default function CategoriesPage() {
           initialData={editingZone}
           onSubmit={handleZoneFormSubmit}
           onCancel={handleCloseZoneModal}
+          isLoading={createZoneMutation.isPending || updateZoneMutation.isPending}
         />
+      </Modal>
+
+      {/* Bestätigungsdialog für Löschen */}
+      <Modal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        title={categoryToDelete ? "Kategorie löschen" : zoneToDelete ? "Zone löschen" : "Element löschen"}
+        size="md"
+      >
+        <Box p={4}>
+          <Text mb={4}>
+            {categoryToDelete
+              ? `Sind Sie sicher, dass Sie die Kategorie "${categoryToDelete.name}" löschen möchten? Alle zugehörigen Zonen werden ebenfalls gelöscht.`
+              : zoneToDelete
+                ? `Sind Sie sicher, dass Sie die Zone "${zoneToDelete.name}" löschen möchten?`
+                : "Sind Sie sicher, dass Sie dieses Element löschen möchten?"}
+          </Text>
+          <Flex justifyContent="flex-end" gap={3} mt={4}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteConfirmOpen(false)}
+              borderRadius="full"
+              borderColor="button.modalSecondary.borderColor"
+              color="button.modalSecondary.color"
+              _hover={{
+                bg: "button.modalSecondary.hoverBg",
+                boxShadow: "cardHover"
+              }}
+              size="md"
+              px={5}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              bg="red.500"
+              color="white"
+              borderRadius="full"
+              boxShadow="card"
+              _hover={{
+                bg: "red.600",
+                boxShadow: "cardHover"
+              }}
+              size="md"
+              px={5}
+              loading={deleteCategoryMutation.isPending || deleteZoneMutation.isPending}
+              onClick={categoryToDelete ? confirmDeleteCategory : confirmDeleteZone}
+            >
+              Löschen
+            </Button>
+          </Flex>
+        </Box>
       </Modal>
     </Flex>
   );

@@ -6,6 +6,15 @@ import { DataTable } from "@/components/core/DataTable";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { LightMode } from "@/components/ui/color-mode";
 
+// Interface für Discord-Rollen
+export interface GuildRole {
+  id: string;
+  name: string;
+  color: number;
+  colorHex?: string;
+  position: number;
+}
+
 // Definiere den Typ für eine Kategorie
 export interface Kategorie {
   id: string;
@@ -19,6 +28,7 @@ export interface Kategorie {
   tracking: boolean;
   setup: boolean;
   roles: string;
+  rolesInfo?: Array<{id: string; name: string; colorHex?: string}> | null; // Aufbereitete Rolleninformationen
   lastAccess: string;
   lastUser?: string; // Optional
   totalTime: string;
@@ -101,7 +111,55 @@ export const KategorieTabelle: React.FC<KategorieTabelleProps> = ({
           header: 'Rollen',
           accessor: 'roles',
           label: 'Zugewiesene Rollen',
-          priority: 30 // Niedrigere Priorität
+          priority: 30, // Niedrigere Priorität
+          cell: (value: string, row: Kategorie) => {
+            // Debug-Ausgaben
+            console.log('Rollen cell-Funktion aufgerufen mit:', {
+              value,
+              rowId: row.id,
+              rowName: row.name,
+              rolesInfo: row.rolesInfo,
+              rolesString: row.roles
+            });
+
+            // Prüfe row.rolesInfo
+            if (row.rolesInfo === undefined) {
+              // Wenn undefined: Zeige "Lade Rollen..."
+              return <Text fontSize="0.8em" color="gray.500">Rollen werden geladen...</Text>;
+            }
+
+            // Wenn null oder leeres Array: Zeige "Keine Rollen"
+            if (row.rolesInfo === null || row.rolesInfo.length === 0) {
+              return <Text fontSize="0.8em" color="gray.500">Keine Rollen</Text>;
+            }
+
+            // Wenn Array vorhanden: Zeige die ersten 2 Rollennamen und ggf. "... und X weitere"
+            const displayCount = 2;
+            const remainingCount = row.rolesInfo.length - displayCount;
+
+            // Erstelle die anzuzeigenden Rollennamen
+            const displayRoleNames = row.rolesInfo
+              .slice(0, displayCount)
+              .map(role => role.name || `Rolle ${role.id}`) // Fallback, falls name fehlt
+              .join(', ');
+
+            const allRoleNames = row.rolesInfo
+              .map(role => role.name || `Rolle ${role.id}`) // Fallback, falls name fehlt
+              .join(', ');
+
+            console.log('Angezeigte Rollennamen:', displayRoleNames);
+            console.log('Alle Rollennamen:', allRoleNames);
+
+            return (
+              <Text
+                fontSize="0.8em"
+                title={allRoleNames} // Einfacher HTML-Tooltip mit allen Rollennamen
+              >
+                {displayRoleNames}
+                {remainingCount > 0 ? ` ... und ${remainingCount} weitere` : ''}
+              </Text>
+            );
+          }
         },
         {
           header: 'Letzter Zugriff',
